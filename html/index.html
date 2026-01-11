@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCPA System - Online CPA Review Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #277186;
+            --secondary-color: #2D2D2D;
+            --accent-color: #9a653a;
+            --text-color: #2D2D2D;
+            --light-bg: #f8f9fa;
+            --border-color: #e5e7eb;
+            --white: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--white);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(39, 113, 134, 0.85), rgba(45, 45, 45, 0.85)), url('https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            color: var(--white);
+            padding: 4rem 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-button {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: var(--white);
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 1.5rem 0;
+        }
+
+        .header-button:hover {
+            background-color: #8a5a2a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .header-button {
+                position: static;
+                display: inline-block;
+                margin-top: 1.5rem;
+            }
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--white);
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+            color: var(--white);
+        }
+
+        .section {
+            margin: 4rem 0;
+            padding: 2rem;
+            background-color: var(--light-bg);
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        h2::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background-color: var(--accent-color);
+            border-radius: 2px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .feature-card {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-top: 3px solid var(--primary-color);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+
+        .feature-card h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-card h3::before {
+            content: "✓";
+            color: var(--accent-color);
+            margin-right: 0.75rem;
+            font-weight: bold;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            margin-bottom: 0.75rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li::before {
+            content: "•";
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+        }
+
+        .benefits {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            margin-top: 2rem;
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .benefits h3 {
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin: 4rem 0;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: var(--white);
+            padding: 1rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .cta-button:hover {
+            background-color: #8a5a2a;
+        }
+
+        .highlight {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        /* Loading overlay styles */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+            margin-bottom: 1rem;
+        }
+
+        .loading-text {
+            color: var(--white);
+            font-size: 1.25rem;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        footer {
+            background-color: var(--secondary-color);
+            color: var(--white);
+            padding: 2rem 0;
+            text-align: center;
+            margin-top: 4rem;
+        }
+
+        .testimonial {
+            background: var(--white);
+            padding-left: 4rem;
+            padding-top: 2rem;
+            padding-bottom: 2rem;
+            padding-right: 4rem;
+            
+            border-radius: 0.75rem;
+            margin: 2rem 0;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .testimonial::before {
+            content: "\201C";
+            font-size: 4rem;
+            color: var(--primary-color);
+            opacity: 0.2;
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+        }
+
+        .testimonial-text {
+            font-style: italic;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonial-author {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .student-image {
+            width: 100%;
+            max-width: 600px;
+            border-radius: 0.5rem;
+            margin: 2rem auto;
+            display: block;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 2rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            min-width: 200px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            color: var(--secondary-color);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h3>DCRC</h3>
+            <h1>Online CPA Review Classes</h1>
+            <p class="subtitle">Your Path to CPA Success: Interactive Learning, Expert Support, and Comprehensive Study Resources</p>
+            <a href="https://app.ocpac.co.tz" class="header-button" id="header-button">Get Started</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="section">
+            <h2>Student-Focused Learning Experience</h2>
+            <p>OCPA is designed with CPA students at its core, providing a seamless, interactive, and supportive learning environment. Our platform combines comprehensive study materials with expert guidance to help you achieve your CPA certification goals efficiently and effectively.</p>
+            
+            <div class="benefits">
+                <h3>Why Students Love OCPAC</h3>
+                <ul class="feature-list">
+                    <li><strong>User-Friendly Interface:</strong> Intuitive design that makes navigation effortless</li>
+                    <li><strong>Interactive Learning:</strong> Engage with dynamic content and practice exercises</li>
+                    <li><strong>Expert Support:</strong> Access to experienced instructors and mentors</li>
+                    <li><strong>Flexible Learning:</strong> Study at your own pace, anytime and anywhere</li>
+                    <li><strong>Comprehensive Resources:</strong> All the materials you need in one place</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Student Success Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>Interactive Learning Experience</h3>
+                    <ul class="feature-list">
+                        <li>Engaging video lectures with real-world examples</li>
+                        <li>Interactive practice questions and simulations</li>
+                        <li>Progress tracking to monitor your advancement</li>
+                        <li>Personalized study plans based on your performance</li>
+                        <li>Mobile-friendly interface for learning on the go</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Expert Support & Guidance</h3>
+                    <ul class="feature-list">
+                        <li>24/7 online chat support with subject matter experts</li>
+                        <li>Weekly live Q&A sessions with instructors</li>
+                        <li>One-on-one mentoring for personalized guidance</li>
+                        <li>Discussion forums to connect with peers</li>
+                        <li>Regular feedback on your progress and performance</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Comprehensive Study Materials</h3>
+                    <ul class="feature-list">
+                        <li>Up-to-date content aligned with CPA exam requirements</li>
+                        <li>Structured learning paths for each subject area</li>
+                        <li>Practice exams that simulate the actual CPA test</li>
+                        <li>Downloadable study guides and reference materials</li>
+                        <li>Flashcards and memory aids for key concepts</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Application & Enrollment</h3>
+                    <ul class="feature-list">
+                        <li>Simple, streamlined application process</li>
+                        <li>Clear status updates on your application</li>
+                        <li>Flexible payment options with installment plans</li>
+                        <li>Easy access to your enrollment history</li>
+                        <li>Seamless transition between courses and seasons</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Chat Service for Immediate Assistance</h3>
+                    <ul class="feature-list">
+                        <li>Real-time chat with facilitators for instant help</li>
+                        <li>24/7 access to subject matter experts</li>
+                        <li>File sharing and screenshot capabilities</li>
+                        <li>Chat history preservation for future reference</li>
+                        <li>One-on-one consultations for complex topics</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>Communication & Notifications</h3>
+                    <ul class="feature-list">
+                        <li>Instant SMS notifications for important updates</li>
+                        <li>Email reminders for upcoming sessions and deadlines</li>
+                        <li>In-app messaging with instructors and peers</li>
+                        <li>Announcement center for course updates</li>
+                        <li>Calendar integration for scheduling study sessions</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Student Success Stories</h2>
+            
+            <div class="testimonial">
+                <p class="testimonial-text">"OCPAC's interactive learning platform and expert support made all the difference in my CPA journey. The personalized study plan helped me focus on my weak areas, and the online chat support was invaluable when I needed clarification on complex topics."</p>
+                <p class="testimonial-author">— Asha Chaupole, CPA</p>
+            </div>
+            
+            <div class="testimonial">
+                <p class="testimonial-text">"As a working professional, I needed flexibility in my CPA preparation. OCPAC allowed me to study at my own pace while still providing the structure and support I needed. The practice exams were spot-on in preparing me for the actual test."</p>
+                <p class="testimonial-author">— Juma Kapalata, CPA</p>
+            </div>
+            
+            <div class="testimonial">
+                <p class="testimonial-text">"The online chat service was a game-changer for me. Being able to get immediate help from experts when I was stuck on a concept saved me countless hours of frustration. The comprehensive study materials and interactive exercises made learning engaging and effective."</p>
+                <p class="testimonial-author">— Mwajuma Mahona, CPA Candidate</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Student Success Metrics</h2>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">92%</div>
+                    <div class="stat-label">Pass Rate</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">15,000+</div>
+                    <div class="stat-label">Students Enrolled</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">4.8/5</div>
+                    <div class="stat-label">Student Satisfaction</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Expert Support</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>How OCPA Helps You Succeed</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h3>For New CPA Candidates</h3>
+                    <ul class="feature-list">
+                        <li>Structured learning path to guide your journey</li>
+                        <li>Comprehensive introduction to CPA exam format</li>
+                        <li>Baseline assessments to identify starting point</li>
+                        <li>Access to experienced mentors for guidance</li>
+                        <li>Community forums to connect with fellow candidates</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>For Busy Professionals</h3>
+                    <ul class="feature-list">
+                        <li>Flexible study schedules that fit your lifestyle</li>
+                        <li>Mobile-friendly platform for learning on the go</li>
+                        <li>Efficient study materials focused on key concepts</li>
+                        <li>Progress tracking to maximize limited study time</li>
+                        <li>On-demand support when you need it most</li>
+                    </ul>
+                </div>
+                
+                <div class="feature-card">
+                    <h3>For Repeat Test-Takers</h3>
+                    <ul class="feature-list">
+                        <li>Diagnostic assessments to identify weak areas</li>
+                        <li>Targeted study plans focusing on improvement areas</li>
+                        <li>Advanced practice questions for challenging topics</li>
+                        <li>One-on-one mentoring for personalized strategies</li>
+                        <li>Performance analytics to track improvement</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="cta-section">
+            <h2>Ready to Start Your CPA Journey?</h2>
+            <p style="margin: 1.5rem 0; font-size: 1.25rem;">Join thousands of successful CPA candidates who have transformed their careers with OCPA.</p>
+            <a href="https://app.ocpac.co.tz" class="cta-button">Enroll Now</a>
+            <p style="margin-top: 1.5rem;">
+                <a href="student-guide.html" class="guide-link" style="color: var(--primary-color); text-decoration: underline; font-weight: 500;">View Student Guide</a>
+            </p>
+        </section>
+    </main>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Redirecting to OCPA Application...</div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p>&copy; <span id="current-year"></span> DCRC. All rights reserved.</p>
+        </div>
+    </footer>
+    <script>
+        document.getElementById('current-year').textContent = new Date().getFullYear();
+        
+        // Add loading indicator functionality
+        const ctaButton = document.querySelector('.cta-button');
+        const headerButton = document.getElementById('header-button');
+        const loadingOverlay = document.getElementById('loading-overlay');
+        
+        function showLoadingAndRedirect(e) {
+            e.preventDefault();
+            loadingOverlay.classList.add('active');
+            
+            // Redirect after a short delay to show the loading indicator
+            setTimeout(function() {
+                window.location.href = 'https://app.ocpac.co.tz';
+            }, 1000);
+        }
+        
+        ctaButton.addEventListener('click', showLoadingAndRedirect);
+        headerButton.addEventListener('click', showLoadingAndRedirect);
+    </script>
+</body>
+</html> 

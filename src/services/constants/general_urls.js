@@ -1,0 +1,1 @@
+export const INTRANET_URL = import.meta.env.VITE_INTRANET_URL;

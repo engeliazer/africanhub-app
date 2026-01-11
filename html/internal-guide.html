@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCPAC System - Internal Staff Guide</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #e74c3c;
+            --text-color: #333;
+            --light-bg: #f5f6fa;
+            --border-color: #dcdde1;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: var(--light-bg);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background-image: url('https://images.unsplash.com/photo-1552664730-d307ca884978?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        
+        header .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        header p {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+
+        .nav-menu {
+            position: sticky;
+            top: 0;
+            background-color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .nav-menu ul {
+            list-style: none;
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .nav-menu a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-menu a:hover {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .step {
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background-color: var(--light-bg);
+            border-radius: 4px;
+        }
+
+        .step h3 {
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .step p {
+            margin-bottom: 0.5rem;
+        }
+
+        .step .explanation {
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #666;
+            margin-left: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            border-left: 2px solid var(--border-color);
+        }
+
+        .tip {
+            background-color: #e8f4f8;
+            border-left: 4px solid var(--secondary-color);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .warning {
+            background-color: #fde8e8;
+            border-left: 4px solid var(--accent-color);
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: var(--secondary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .back-to-top:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        @media (max-width: 768px) {
+            .nav-menu ul {
+                flex-direction: column;
+                align-items: center;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h1>OCPAC System - Internal Staff Guide</h1>
+            <p>Comprehensive guide for administrators, facilitators, and support staff</p>
+        </div>
+    </header>
+
+    <nav class="nav-menu">
+        <div class="container">
+            <ul>
+                <li><a href="#admin">Administration</a></li>
+                <li><a href="#facilitation">Facilitation</a></li>
+                <li><a href="#support">Support</a></li>
+                <li><a href="#accounting">Accounting</a></li>
+                <li><a href="#reports">Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section id="admin" class="section">
+            <h2>System Administration</h2>
+            
+            <div class="step">
+                <h3>User Management</h3>
+                <p>1. Access the admin dashboard</p>
+                <p class="explanation">Navigate to the admin dashboard by clicking on the "Admin" tab in the main navigation menu. This dashboard provides an overview of system statistics and quick access to administrative functions.</p>
+                
+                <p>2. Navigate to User Management section</p>
+                <p class="explanation">In the admin dashboard, locate and click on the "User Management" section. This area allows you to view, create, edit, and manage all user accounts in the system.</p>
+                
+                <p>3. Create new staff accounts with appropriate roles</p>
+                <p class="explanation">Click the "Add New User" button to create a new staff account. Fill in the required information including name, email, and select the appropriate role (Administrator, Facilitator, Support Staff, etc.). Each role comes with predefined permissions.</p>
+                
+                <p>4. Set permissions and access levels</p>
+                <p class="explanation">After creating a user, you can customize their permissions by clicking on the "Edit Permissions" button. This allows you to grant or restrict access to specific modules and functions based on the staff member's responsibilities.</p>
+                
+                <div class="tip">
+                    <strong>Tip:</strong> Regularly review and update user permissions to maintain security. Consider implementing a quarterly audit of user accounts and permissions.
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Course Management</h3>
+                <p>1. Create and configure new courses</p>
+                <p class="explanation">Navigate to the "Course Management" section and click "Add New Course." Enter course details including title, description, duration, and prerequisites. You can also upload course materials and set learning objectives.</p>
+                
+                <p>2. Assign facilitators to courses</p>
+                <p class="explanation">Once a course is created, go to the "Assignments" tab and select facilitators from the dropdown menu. You can assign multiple facilitators to a single course and specify their roles (primary, secondary, etc.).</p>
+                
+                <p>3. Set course schedules and capacity</p>
+                <p class="explanation">In the course settings, define the start and end dates, session times, and maximum number of students. You can also set up recurring sessions and specify break periods between sessions.</p>
+                
+                <p>4. Manage course materials and resources</p>
+                <p class="explanation">Use the "Resources" tab to upload and organize course materials such as lecture notes, presentations, practice questions, and supplementary readings. You can categorize materials and set access permissions.</p>
+            </div>
+
+            <div class="step">
+                <h3>System Configuration</h3>
+                <p>1. Configure system settings</p>
+                <p class="explanation">Access the "System Settings" page to configure general system parameters such as language preferences, time zone, date formats, and notification settings. These settings affect the entire platform.</p>
+                
+                <p>2. Manage payment gateways</p>
+                <p class="explanation">In the "Payment Settings" section, configure and test payment gateways, set up transaction fees, and define refund policies. You can also view transaction history and generate payment reports.</p>
+                
+                <p>3. Set up notification templates</p>
+                <p class="explanation">Navigate to "Notification Templates" to create and customize email and SMS templates for various system events such as course enrollment, payment confirmation, and upcoming sessions.</p>
+                
+                <p>4. Configure backup settings</p>
+                <p class="explanation">In the "Backup & Maintenance" section, schedule automatic backups, define retention periods, and set up data recovery procedures. Regular backups are essential for data security and business continuity.</p>
+            </div>
+
+        </section>
+
+        <section id="facilitation" class="section">
+            <h2>Course Facilitation</h2>
+            
+            <div class="step">
+                <h3>Session Management</h3>
+                <p>1. Access your assigned courses</p>
+                <p class="explanation">Log in to your facilitator account and navigate to the "My Courses" dashboard. Here you'll see all courses assigned to you, along with key information such as enrollment numbers and upcoming sessions.</p>
+                
+                <p>2. Create and schedule online sessions</p>
+                <p class="explanation">Select a course and click "Schedule Session" to create a new online session. Set the date, time, duration, and session type (lecture, Q&A, practice, etc.). You can also configure session settings such as recording options and participant permissions.</p>
+                
+                <p>3. Upload and manage course materials</p>
+                <p class="explanation">Use the "Materials" tab to upload session-specific materials such as presentations, handouts, and practice exercises. You can organize materials by session and set access permissions for students.</p>
+                
+                <p>4. Monitor student attendance</p>
+                <p class="explanation">During and after sessions, use the "Attendance" feature to track student participation. The system automatically records join/leave times, and you can manually adjust attendance records if needed.</p>
+            </div>
+
+            <div class="step">
+                <h3>Student Assessment</h3>
+                <p>1. Create and assign assessments</p>
+                <p class="explanation">Navigate to the "Assessments" section and click "Create New Assessment." Choose the assessment type (quiz, assignment, project) and configure settings such as time limits, passing score, and submission requirements.</p>
+                
+                <p>2. Grade submissions</p>
+                <p class="explanation">Access the "Submissions" tab to view and grade student work. For multiple-choice questions, the system can auto-grade submissions. For written assignments, you can provide detailed feedback and assign scores.</p>
+                
+                <p>3. Provide feedback to students</p>
+                <p class="explanation">After grading, use the feedback tools to provide personalized comments, highlight strengths and areas for improvement, and suggest additional resources. Students will receive notifications when feedback is available.</p>
+                
+                <p>4. Track student progress</p>
+                <p class="explanation">Use the "Progress Tracking" dashboard to monitor individual and class-wide performance. View assessment scores, completion rates, and engagement metrics to identify students who may need additional support.</p>
+            </div>
+
+            <div class="step">
+                <h3>Communication</h3>
+                <p>1. Use the chat system for student support</p>
+                <p class="explanation">Access the chat interface from the main navigation or directly from a student's profile. The chat system allows real-time communication with students, including file sharing and screenshot capabilities.</p>
+                
+                <p>2. Send announcements to students</p>
+                <p class="explanation">Use the "Announcements" feature to send important updates to all students in your courses or to specific groups. You can schedule announcements for future delivery and track read receipts.</p>
+                
+                <p>3. Schedule one-on-one consultations</p>
+                <p class="explanation">Navigate to the "Consultations" section to schedule and manage one-on-one sessions with students. You can set your availability, define session duration, and specify the consultation topic.</p>
+                
+                <p>4. Manage discussion forums</p>
+                <p class="explanation">In the "Forums" section, create and moderate discussion topics for your courses. You can pin important announcements, respond to student questions, and encourage peer-to-peer learning.</p>
+            </div>
+
+        </section>
+
+        <section id="support" class="section">
+            <h2>Support Management</h2>
+    
+
+            <div class="step">
+                <h3>Chat Service Management</h3>
+                <p>1. Access the chat dashboard from the main navigation</p>
+                <p>2. View all active and archived conversations</p>
+                <p>3. Filter chats by status, date, or student</p>
+                <p>4. Search for specific conversations using keywords</p>
+                <div class="tip">
+                    <strong>Tip:</strong> Use the search function to quickly find previous conversations with specific students.
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Chat Details and History</h3>
+                <p>1. Click on any chat to view the full conversation history</p>
+                <p>2. See all messages exchanged, including timestamps</p>
+                <p>3. View student information and context</p>
+                <p>4. Access any attachments or files shared during the conversation</p>
+                <div class="tip">
+                    <strong>Tip:</strong> The chat history is preserved indefinitely, allowing you to reference past conversations when needed.
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Rating System</h3>
+                <p>1. Request ratings from students after resolving their issues</p>
+                <p>2. Send rating requests through the chat interface</p>
+                <p>3. View and analyze rating statistics in the reports section</p>
+                <p>4. Use ratings to identify areas for improvement</p>
+                <div class="warning">
+                    <strong>Note:</strong> Only request ratings after the student's issue has been fully resolved to ensure positive feedback.
+                </div>
+            </div>
+
+            <div class="step">
+                <h3>Ticket Management</h3>
+                <p>1. Access the support dashboard</p>
+                <p class="explanation">Log in to your support staff account and navigate to the "Support Dashboard." This central hub provides an overview of all support tickets, their status, and priority levels.</p>
+                
+                <p>2. View and assign support tickets</p>
+                <p class="explanation">In the ticket queue, you can filter tickets by status, priority, or category. Click on a ticket to view details and use the "Assign" button to take ownership or assign it to another support staff member.</p>
+                
+                <p>3. Track ticket status and resolution</p>
+                <p class="explanation">As you work on a ticket, update its status (Open, In Progress, Pending, Resolved) and add internal notes. The system tracks resolution time and satisfaction ratings for performance monitoring.</p>
+                
+                <p>4. Generate support reports</p>
+                <p class="explanation">Use the "Reports" section to generate insights on support performance, including average resolution time, satisfaction ratings, and common issues. These reports help identify areas for improvement.</p>
+            </div>
+
+            <div class="step">
+                <h3>Knowledge Base</h3>
+                <p>1. Create and update help articles</p>
+                <p class="explanation">Navigate to the "Knowledge Base" section and click "Create Article" to write new help content. Use the rich text editor to format articles, add images, and include step-by-step instructions.</p>
+                
+                <p>2. Manage FAQs</p>
+                <p class="explanation">In the "FAQs" section, create and organize frequently asked questions by category. You can mark certain FAQs as featured to appear prominently on the help center homepage.</p>
+                
+                <p>3. Upload troubleshooting guides</p>
+                <p class="explanation">Use the "Guides" section to upload detailed troubleshooting documents, user manuals, and video tutorials. These resources help students resolve common issues independently.</p>
+                
+                <p>4. Maintain documentation</p>
+                <p class="explanation">Regularly review and update all knowledge base content to ensure accuracy and relevance. You can track which articles are most viewed and identify gaps in documentation.</p>
+            </div>
+
+            <div class="step">
+                <h3>Payment Processing</h3>
+                <p>1. Monitor payment transactions</p>
+                <p class="explanation">Access the "Transactions" dashboard to view all payment activities in real-time. You can filter transactions by date, status, payment method, and amount to track financial operations.</p>
+                
+                <p>2. Process refunds when necessary</p>
+                <p class="explanation">When a refund is requested, navigate to the student's payment history, select the transaction, and click "Process Refund." You can specify the refund amount and reason, and the system will handle the transaction through the configured payment gateway.</p>
+                
+                <p>3. Generate invoices</p>
+                <p class="explanation">Use the "Invoices" section to create and send professional invoices to students. You can customize invoice templates, add payment terms, and set up automatic invoice generation for recurring payments.</p>
+                
+                <p>4. Track payment status</p>
+                <p class="explanation">The system automatically tracks payment status (Pending, Completed, Failed, Refunded) and sends notifications for payment events. You can view payment history for individual students or generate payment reports.</p>
+            </div>
+
+            <div class="step">
+                <h3>Financial Reports</h3>
+                <p>1. Generate revenue reports</p>
+                <p class="explanation">Access the "Financial Reports" section and select "Revenue Report" to view income by period, course, or payment method. These reports help track financial performance and identify revenue trends.</p>
+                
+                <p>2. Track payment history</p>
+                <p class="explanation">Use the "Payment History" feature to view detailed records of all transactions, including successful payments, failed attempts, and refunds. You can export this data for accounting purposes.</p>
+                
+                <p>3. Monitor outstanding balances</p>
+                <p class="explanation">The "Outstanding Balances" report shows all pending payments and overdue accounts. You can send payment reminders and track collection efforts through the system.</p>
+                
+                <p>4. Export financial data</p>
+                <p class="explanation">All financial reports can be exported in various formats (PDF, Excel, CSV) for further analysis or for sharing with stakeholders. The system maintains an audit trail of all financial activities.</p>
+            </div>
+
+            <div class="step">
+                <h3>Performance Metrics</h3>
+                <p>1. Access analytics dashboard</p>
+                <p class="explanation">Navigate to the "Analytics" section to view comprehensive performance metrics. The dashboard provides real-time data on key indicators such as student engagement, course completion rates, and assessment performance.</p>
+                
+                <p>2. Generate performance reports</p>
+                <p class="explanation">Use the "Reports" feature to create customized performance reports for different stakeholders. You can select specific metrics, date ranges, and visualization options to present data effectively.</p>
+                
+                <p>3. Track key metrics</p>
+                <p class="explanation">The system tracks numerous key performance indicators (KPIs) including student enrollment, retention rates, assessment scores, and satisfaction ratings. These metrics help evaluate the effectiveness of educational programs.</p>
+                
+                <p>4. Export report data</p>
+                <p class="explanation">All reports can be exported in various formats for sharing with stakeholders or for further analysis. The system maintains historical data for trend analysis and long-term planning.</p>
+            </div>
+
+            <div class="step">
+                <h3>Custom Reports</h3>
+                <p>1. Create custom report templates</p>
+                <p class="explanation">In the "Report Builder" section, you can design custom report templates by selecting data fields, filters, and visualization options. These templates can be saved for future use.</p>
+                
+                <p>2. Schedule automated reports</p>
+                <p class="explanation">Use the "Report Scheduler" to set up automatic generation and delivery of reports at specified intervals. You can configure email notifications to send reports to relevant stakeholders.</p>
+                
+                <p>3. Share reports with stakeholders</p>
+                <p class="explanation">Reports can be shared directly from the system via email or by generating a secure link. You can control access permissions to ensure reports are only viewed by authorized personnel.</p>
+                
+                <p>4. Archive report history</p>
+                <p class="explanation">The system automatically archives all generated reports for future reference. You can access the report archive to view historical data and track changes over time.</p>
+            </div>
+
+        </section>
+
+    </main>
+
+    <a href="#" class="back-to-top" title="Back to Top">↑</a>
+</body>
+</html> 

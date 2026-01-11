@@ -1,0 +1,103 @@
+.accounting-dashboard {
+  padding: 24px;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+}
+
+.dashboard-alert {
+  margin-bottom: 24px;
+}
+
+.dashboard-card {
+  margin-bottom: 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.status-card {
+  height: 100%;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.status-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.status-card.success {
+  border-top: 4px solid #52c41a;
+}
+
+.status-card.warning {
+  border-top: 4px solid #faad14;
+}
+
+.status-card.error {
+  border-top: 4px solid #f5222d;
+}
+
+.amount-statistic {
+  margin-top: 8px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.sub-card {
+  height: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.special-case-card {
+  height: 100%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s;
+}
+
+.special-case-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Custom styles that complement Tailwind CSS */
+.ant-progress-circle .ant-progress-text {
+  font-size: 12px;
+}
+
+/* Override any Ant Design styles that need customization */
+.ant-card {
+  border-radius: 8px;
+}
+
+.ant-statistic-title {
+  margin-bottom: 4px;
+}
+
+/* Ensure proper spacing in mobile view */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .dashboard-header .ant-picker {
+    margin-top: 16px;
+    width: 100%;
+  }
+
+  .ant-card {
+    margin-bottom: 16px;
+  }
+} 

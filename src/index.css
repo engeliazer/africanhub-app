@@ -1,0 +1,398 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles for Ant Design menu - only for parent submenu */
+/* Submenu title when submenu is open/selected */
+.ant-menu-submenu-selected > .ant-menu-submenu-title {
+  @apply bg-brandGray text-brandYellow !important;
+}
+
+.ant-menu-submenu-open > .ant-menu-submenu-title {
+  @apply bg-brandGray text-brandYellow !important;
+}
+
+/* Hover effect for submenu titles */
+.ant-menu-submenu-title:hover {
+  @apply bg-brandGray text-brandYellow !important;
+}
+
+@layer components {
+  .button {
+    @apply font-semibold bg-mainWhite
+  }
+
+  .button--state-primary {
+    @apply border border-primary bg-primary/10 text-primary
+  }
+
+  .button--state-green {
+    @apply border border-primary bg-primary/10 text-primary
+  }
+
+  .button--state-secondary {
+    @apply border border-gray-500 text-gray-950/90
+  }
+
+  .button--state-tertiary {
+    @apply border border-blue-500 text-blue-950/90
+  }
+}
+
+.navbar-red {
+  display: flex;
+  align-items: center;
+  background: theme("colors.brandGray");
+  color: theme("colors.textBrandGreen");
+  height: 60px;
+}
+
+.navbar-yellow {
+  display: flex;
+  background: theme("colors.brandGreen");
+  height: 40px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  padding-right: 10px;
+  margin-left: 110px;
+}
+
+.business-name {
+  margin-left: -0.25rem;
+  display: flex;
+  height: 40px;
+  flex: 1 1 0%;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.menu-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 85px;
+  background: theme("colors.brandBlack");
+  flex: 1;
+  height: 40px;
+}
+
+.menu-left {
+  display: flex;
+  font-weight: 500;
+  align-items: center;
+  height: 30px;
+  flex: 1;
+  font-size: 14px;
+  @apply text-brandBlack;
+}
+
+.menu-right {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  background: theme("colors.brandBlack");
+  font-weight: 500;
+  height: 30px;
+  flex: 1;
+  font-size: 14px;
+  @apply text-brandBlack;
+}
+
+.profile-icon {
+  @apply text-brandWhite;
+  cursor: pointer;
+  margin-left: auto;
+  margin-right: 100px;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.logo-image {
+  height: 100px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .3), inset 0 0 40px rgba(0, 0, 0, .1);
+}
+
+.profile-nav-bg {
+  height: 100px;
+  margin-top: -5px;
+  border-radius: 12px;
+  box-shadow: 0 20px 27px rgb(0 0 0 / 5%);
+  background-size: cover;
+  background-position: 10%;
+}
+
+.left-right {
+  transform-origin: 0% 50%;
+}
+
+.top-right-links .active {
+  @apply bg-brandGray;
+}
+
+.avatar {
+  display: flex;
+  -webkit-box-pack: center;
+  justify-content: center;
+  -webkit-box-align: center;
+  align-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 61.5px;
+  @apply border-[3px] border-brandWhite bg-brandGreen text-brandWhite;
+  font-size: 28px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.avatar-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 40px);
+  margin: 8px 0 4px;
+  font-family: "Avenir Next forINTUIT", Arial, -apple-system, "Helvetica Neue", sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 700 !important;
+}
+
+.avatar-email {
+  font-size: 12px;
+  line-height: 1.33;
+  font-weight: 400;
+  @apply text-brandBlack;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100% - 40px);
+  margin: 0 0 12px;
+}
+
+.container-auth {
+  width: 100%;
+  max-width: 500px;
+  padding: 15px 0;
+  margin: auto;
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  /* Make tables scroll horizontally on mobile */
+  .ant-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Ensure table container allows scrolling */
+  .ant-table-container {
+    overflow-x: auto !important;
+  }
+  
+  /* Reduce padding on cards for mobile */
+  .ant-card-body {
+    padding: 12px !important;
+  }
+  
+  /* Stack filter controls vertically on mobile */
+  .ant-space {
+    flex-wrap: wrap;
+  }
+  
+  /* Make buttons smaller on mobile */
+  .ant-btn {
+    font-size: 12px;
+    padding: 4px 8px;
+    height: auto;
+    min-height: 24px;
+  }
+  
+  /* Icon-only buttons on mobile */
+  .ant-btn-sm {
+    padding: 4px 6px;
+    font-size: 12px;
+  }
+  
+  /* Adjust table font size for mobile */
+  .ant-table {
+    font-size: 11px;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 8px 4px !important;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 6px 4px !important;
+    font-size: 11px;
+  }
+  
+  /* Make fixed columns work on mobile */
+  .ant-table-cell-fix-left,
+  .ant-table-cell-fix-right {
+    position: sticky !important;
+    z-index: 2;
+    background: white;
+  }
+  
+  /* Ensure actions column is always visible */
+  .ant-table-cell-fix-right {
+    right: 0 !important;
+  }
+  
+  /* Make Space component in actions column stack vertically */
+  .ant-table-tbody .ant-space-vertical {
+    gap: 4px !important;
+  }
+  
+  /* Make Select dropdowns smaller on mobile */
+  .ant-select {
+    font-size: 12px;
+  }
+  
+  /* Adjust tabs for mobile */
+  .ant-tabs-nav {
+    margin-bottom: 8px !important;
+  }
+  
+  .ant-tabs-tab {
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+  }
+  
+  /* Adjust modal width on mobile */
+  .ant-modal {
+    max-width: calc(100vw - 32px) !important;
+    margin: 16px auto !important;
+  }
+  
+  /* Make tags smaller on mobile */
+  .ant-tag {
+    font-size: 11px;
+    padding: 0 4px;
+  }
+  
+  /* Adjust form items spacing on mobile */
+  .ant-form-item {
+    margin-bottom: 12px !important;
+  }
+  
+  /* Make tooltips more readable on mobile */
+  .ant-tooltip-inner {
+    font-size: 12px;
+  }
+  
+  /* Hide non-essential table columns on very small screens */
+  @media (max-width: 480px) {
+    .ant-table-cell {
+      white-space: nowrap;
+    }
+    
+    /* Make pagination smaller */
+    .ant-pagination {
+      font-size: 11px;
+    }
+    
+    .ant-pagination-item {
+      min-width: 24px;
+      height: 24px;
+      line-height: 22px;
+    }
+  }
+}
+
+/* Content Protection - Watermark & Security */
+.protected-content-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 99999;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Prevent text selection on protected content */
+.protected-content {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Disable context menu on protected content */
+.protected-content * {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+/* Additional mobile protection */
+@media (max-width: 768px) {
+  .protected-content video {
+    -webkit-touch-callout: none !important;
+    pointer-events: auto;
+  }
+  
+  /* Prevent long-press menu on mobile */
+  .protected-content *:not(video):not(button):not(input) {
+    -webkit-touch-callout: none !important;
+    -webkit-user-select: none !important;
+    pointer-events: none;
+  }
+}
+
+/* ClassSession Table Styling */
+.ant-table-tbody > tr:hover {
+  background-color: #f9fafb !important;
+}
+
+/* Course header styling */
+.course-header {
+  background: #277186;
+  color: white;
+  padding: 12px 16px;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 4px 4px 0 0;
+}
+
+/* Topic header row in table */
+.topic-header-row {
+  background-color: #f0f5f7 !important;
+  border-left: 3px solid #277186;
+}
+
+/* Mobile responsive for ClassSession tables */
+@media (max-width: 768px) {
+  .course-header {
+    font-size: 13px;
+    padding: 10px 12px;
+    word-wrap: break-word;
+    white-space: normal;
+  }
+  
+  /* Ensure table cells wrap properly on mobile */
+  .ant-table-cell {
+    word-wrap: break-word !important;
+    white-space: normal !important;
+  }
+  
+  /* Make buttons full width on mobile */
+  .ant-table-cell button {
+    width: 100%;
+    font-size: 11px;
+  }
+}

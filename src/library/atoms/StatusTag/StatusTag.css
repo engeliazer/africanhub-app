@@ -1,0 +1,48 @@
+
+
+@tailwind components;
+
+@layer components {
+    .tag-status {
+        @apply rounded-sm font-medium;
+    }
+
+    .tag-status--completed {
+        @apply bg-brandGreen/10 text-brandGreen/100;
+    }
+
+    .tag-status--pending {
+        @apply bg-brandYellow/10 text-brandYellow;
+    }
+
+    .tag-status--approved {
+        @apply bg-brandGreen/10 text-brandGreen;
+    }
+
+    .tag-status--rejected {
+        @apply bg-brandMaroon/10 text-brandMaroon;
+    }
+
+    .tag-status--returned {
+        @apply bg-sky-700/10 text-sky-900;
+    }
+
+    /* SIZES */
+    .tag-status--small {
+        @apply text-xs;
+        @apply py-1 px-2;
+    }
+
+    .tag-status--medium {
+        @apply text-sm;
+        @apply py-1 px-3;
+    }
+
+    .tag-status--large {
+        @apply text-base;
+        @apply py-2 px-4;
+    }
+}
+
+
+

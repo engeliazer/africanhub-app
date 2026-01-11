@@ -1,0 +1,788 @@
+import React, { useState, useEffect } from 'react';
+import { Card, Table, Button, Modal, Form, Input, Space, message, Select, Tabs, Upload, Tag } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, UploadOutlined, EyeOutlined, DownloadOutlined } from '@ant-design/icons';
+import { Viewer, Worker, SpecialZoomLevel } from '@react-pdf-viewer/core';
+import { defaultLayoutPlugin } from '@react-pdf-viewer/default-layout';
+import { zoomPlugin } from '@react-pdf-viewer/zoom';
+import { scrollModePlugin } from '@react-pdf-viewer/scroll-mode';
+import { searchPlugin } from '@react-pdf-viewer/search';
+import { selectionModePlugin } from '@react-pdf-viewer/selection-mode';
+import '@react-pdf-viewer/core/lib/styles/index.css';
+import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import subtopicMaterialsService from '../../services/subtopicMaterials';
+import studyMaterialCategoriesService from '../../services/studyMaterialCategories';
+import subjectsService from '../../services/subjects';
+import subtopicsService from '../../services/subtopics';
+import topicsService from '../../services/topics';
+import coursesService from '../../services/courses';
+import DocumentViewer from '../../components/document/DocumentViewer';
+import VideoViewer from '../../components/document/VideoViewer';
+
+const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, selectedTopic }) => {
+  const [materials, setMaterials] = useState({});  // Materials organized by category
+  const [categories, setCategories] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [subjects, setSubjects] = useState([]);
+  const [topics, setTopics] = useState([]);
+  const [subtopics, setSubtopics] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedTopic, setSelectedTopic] = useState(null);
+  const [selectedSubtopic, setSelectedSubtopic] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [form] = Form.useForm();
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
+  const [isViewerModalVisible, setIsViewerModalVisible] = useState(false);
+  const [currentFileUrl, setCurrentFileUrl] = useState(null);
+  const [currentFileName, setCurrentFileName] = useState('');
+  const [currentCategoryId, setCurrentCategoryId] = useState(null);
+  const [currentMaterialId, setCurrentMaterialId] = useState(null);
+
+  // Fetch categories for tabs
+  const fetchCategories = async () => {
+    try {
+      const response = await studyMaterialCategoriesService.getStudyMaterialCategories(1, 100);
+      console.log('Categories API Response:', response);
+      if (response.status === 'success') {
+        const categoriesData = response.data || [];
+        console.log('Fetched categories:', categoriesData);
+        setCategories(categoriesData);
+        
+        if (categoriesData.length > 0) {
+          const firstCategoryId = categoriesData[0].id;
+          console.log('Setting initial category:', firstCategoryId);
+          setActiveCategory(firstCategoryId);
+          
+          // If we have a selected subtopic, fetch materials for the first category
+          if (selectedSubtopic) {
+            console.log('Fetching materials for initial category');
+            fetchMaterials(selectedSubtopic, firstCategoryId);
+          }
+        }
+      } else {
+        throw new Error('Failed to fetch categories');
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      message.error('Failed to fetch categories');
+    }
+  };
+
+  // Fetch courses for dropdown
+  const fetchCourses = async () => {
+    try {
+      const response = await coursesService.getCourses();
+      // The response is an array directly, not nested in data.courses
+      setCourses(response || []);
+      console.log('Fetched courses:', response); // Debug log
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      message.error('Failed to fetch courses');
+    }
+  };
+
+  // Fetch subjects based on selected course
+  const fetchSubjects = async (courseId) => {
+    if (!courseId) {
+      setSubjects([]);
+      return;
+    }
+    try {
+      const response = await subjectsService.getSubjects(1, 100, courseId);
+      console.log('Subjects API Response:', response);
+      if (response.status === 'success') {
+        setSubjects(response.data || []);
+        setSelectedSubject(null);
+        setSelectedTopic(null);
+        setSelectedSubtopic(null);
+        form.resetFields(['subject_id', 'topic_id', 'subtopic_id']);
+      } else {
+        throw new Error('Failed to fetch subjects');
+      }
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+      message.error('Failed to fetch subjects');
+      setSubjects([]);
+    }
+  };
+
+  // Fetch topics based on selected subject
+  const fetchTopics = async (subjectId) => {
+    if (!subjectId) {
+      setTopics([]);
+      return;
+    }
+    try {
+      const response = await topicsService.getTopicsBySubject(subjectId);
+      setTopics(response.data.topics || []);
+      // Reset dependent selections
+      setSelectedTopic(null);
+      setSelectedSubtopic(null);
+      form.resetFields(['topic_id', 'subtopic_id']);
+    } catch (error) {
+      console.error('Error fetching topics:', error);
+      message.error('Failed to fetch topics');
+    }
+  };
+
+  // Fetch subtopics based on selected topic
+  const fetchSubtopics = async (topicId) => {
+    if (!topicId) {
+      setSubtopics([]);
+      return;
+    }
+    try {
+      const response = await subtopicsService.getSubtopicsByTopic(topicId);
+      setSubtopics(response.data.subtopics || []);
+      // Reset subtopic selection
+      setSelectedSubtopic(null);
+      form.resetFields(['subtopic_id']);
+    } catch (error) {
+      console.error('Error fetching subtopics:', error);
+      message.error('Failed to fetch subtopics');
+    }
+  };
+
+  // Fetch materials for a specific subtopic and category
+  const fetchMaterials = async (subtopicId, categoryId, page = 1) => {
+    console.log('fetchMaterials called with:', { subtopicId, categoryId, page });
+    if (!subtopicId || !categoryId) {
+      console.log('Missing required parameters:', { subtopicId, categoryId });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      console.log('Making API call to get materials');
+      const response = await subtopicMaterialsService.getMaterials(subtopicId, page, pagination.pageSize);
+      console.log('API response:', response);
+      
+      // Check if response exists
+      if (!response) {
+        throw new Error('No response received from API');
+      }
+
+      // Check if response has data property (common API pattern)
+      if (response.data && response.data.items) {
+        const materialsData = response.data.items;
+        console.log('All materials data:', materialsData);
+        
+        // Filter materials for the current category
+        const categoryMaterials = materialsData.filter(m => m.material_category_id === categoryId);
+        console.log('Filtered materials for category:', categoryId, categoryMaterials);
+        
+        // Update materials state with the filtered data
+        setMaterials(prev => ({
+          ...prev,
+          [categoryId]: categoryMaterials
+        }));
+
+        // Update pagination
+        setPagination(prev => ({
+          ...prev,
+          current: response.data.page || 1,
+          total: response.data.total || 0
+        }));
+
+        // Log the final state update
+        console.log('Updated materials state:', {
+          categoryId,
+          materialsCount: categoryMaterials.length,
+          pagination: {
+            current: response.data.page || 1,
+            total: response.data.total || 0
+          }
+        });
+      } else if (response.items) {
+        // Handle direct items response
+        const materialsData = response.items;
+        console.log('All materials data:', materialsData);
+        
+        // Filter materials for the current category
+        const categoryMaterials = materialsData.filter(m => m.material_category_id === categoryId);
+        console.log('Filtered materials for category:', categoryId, categoryMaterials);
+        
+        // Update materials state with the filtered data
+        setMaterials(prev => ({
+          ...prev,
+          [categoryId]: categoryMaterials
+        }));
+
+        // Update pagination
+        setPagination(prev => ({
+          ...prev,
+          current: response.page || 1,
+          total: response.total || 0
+        }));
+
+        // Log the final state update
+        console.log('Updated materials state:', {
+          categoryId,
+          materialsCount: categoryMaterials.length,
+          pagination: {
+            current: response.page || 1,
+            total: response.total || 0
+          }
+        });
+      } else {
+        console.error('Invalid response format:', response);
+        throw new Error('Invalid response format - missing items property');
+      }
+
+    } catch (error) {
+      console.error('Error in fetchMaterials:', error);
+      message.error(`Failed to fetch materials: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle pagination change
+  const handleTableChange = (newPagination) => {
+    setPagination(newPagination);
+    if (selectedSubtopic && activeCategory) {
+      fetchMaterials(selectedSubtopic, activeCategory, newPagination.current);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    fetchCourses();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      fetchSubjects(selectedCourse);
+    }
+  }, [selectedCourse]);
+
+  useEffect(() => {
+    if (selectedSubject) {
+      fetchTopics(selectedSubject);
+    }
+  }, [selectedSubject]);
+
+  useEffect(() => {
+    if (selectedTopic) {
+      fetchSubtopics(selectedTopic);
+    }
+  }, [selectedTopic]);
+
+  useEffect(() => {
+    if (selectedSubtopic && activeCategory) {
+      console.log('useEffect triggered for materials fetch:', {
+        selectedSubtopic,
+        activeCategory
+      });
+      fetchMaterials(selectedSubtopic, activeCategory);
+    }
+  }, [selectedSubtopic, activeCategory]);
+
+  useEffect(() => {
+    if (selectedCourse) {
+      setSelectedCourse(selectedCourse);
+      fetchSubjects(selectedCourse);
+    }
+    if (selectedSubject) {
+      setSelectedSubject(selectedSubject);
+      fetchTopics(selectedSubject);
+    }
+    if (selectedTopic) {
+      setSelectedTopic(selectedTopic);
+      fetchSubtopics(selectedTopic);
+    }
+    if (subtopicId) {
+      setSelectedSubtopic(subtopicId);
+      if (categories.length > 0 && activeCategory) {
+        fetchMaterials(subtopicId, activeCategory);
+      }
+    }
+  }, [selectedCourse, selectedSubject, selectedTopic, subtopicId]);
+
+  const handleCourseChange = (value) => {
+    setSelectedCourse(value);
+  };
+
+  const handleSubjectChange = (value) => {
+    setSelectedSubject(value);
+  };
+
+  const handleTopicChange = (value) => {
+    setSelectedTopic(value);
+  };
+
+  const handleSubtopicChange = (value) => {
+    console.log('handleSubtopicChange called with value:', value);
+    setSelectedSubtopic(value);
+    
+    // Reset materials state when subtopic changes
+    setMaterials({});
+    
+    // If we have categories, fetch materials for the active category
+    if (categories.length > 0 && activeCategory) {
+      console.log('Fetching materials for new subtopic:', {
+        subtopicId: value,
+        categoryId: activeCategory
+      });
+      fetchMaterials(value, activeCategory);
+    } else {
+      console.log('No active category or categories not loaded yet');
+    }
+  };
+
+  const showModal = () => {
+    form.resetFields();
+    setIsModalVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    form.resetFields();
+  };
+
+  const handleSubmit = async () => {
+    try {
+      const values = await form.validateFields();
+      setLoading(true);
+
+      const formData = new FormData();
+      formData.append('subtopic_id', selectedSubtopic);
+      formData.append('material_category_id', activeCategory);
+      formData.append('name', values.name);
+      formData.append('file', values.material_path.file);
+      formData.append('created_by', 1);
+      formData.append('updated_by', 1);
+
+      // Get the current category
+      const currentCategory = categories.find(c => c.id === activeCategory);
+      
+      // If it's a video category, get the duration
+      if (currentCategory?.code === 'VIDEOS') {
+        const videoFile = values.material_path.file;
+        const videoDuration = await getVideoDuration(videoFile);
+        formData.append('video_duration', videoDuration);
+      }
+
+      await subtopicMaterialsService.createMaterial(formData);
+      message.success('Material added successfully');
+      handleCancel();
+      fetchMaterials(selectedSubtopic, activeCategory);
+    } catch (error) {
+      console.error('Error saving material:', error);
+      message.error(error.message || 'Failed to save material');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Function to get video duration
+  const getVideoDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        // Format duration as HH:MM:SS
+        const hours = Math.floor(video.duration / 3600);
+        const minutes = Math.floor((video.duration % 3600) / 60);
+        const seconds = Math.floor(video.duration % 60);
+        const formattedDuration = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        resolve(formattedDuration);
+      };
+      video.onerror = () => {
+        reject(new Error('Error loading video file'));
+      };
+      video.src = URL.createObjectURL(file);
+    });
+  };
+
+  // Update the Upload component's beforeUpload function
+  const beforeUpload = (file) => {
+    // Get the current category
+    const currentCategory = categories.find(c => c.id === activeCategory);
+    
+    // Check if the category code is VIDEOS
+    if (currentCategory?.code === 'VIDEOS') {
+      // For VIDEOS category, only accept video files
+      const isVideo = file.type.startsWith('video/');
+      if (!isVideo) {
+        message.error('You can only upload video files for this category!');
+        return false;
+      }
+    } else {
+      // For other categories, only accept PDF files
+      const isPdf = file.type === 'application/pdf';
+      if (!isPdf) {
+        message.error('You can only upload PDF files for this category!');
+        return false;
+      }
+    }
+    return false; // Return false to prevent auto upload
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      setLoading(true);
+      await subtopicMaterialsService.deleteMaterial(id);
+      message.success('Material deleted successfully');
+      fetchMaterials(selectedSubtopic, activeCategory);
+    } catch (error) {
+      console.error('Error deleting material:', error);
+      message.error(error.message || 'Failed to delete material');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewMaterial = async (materialId, fileName, categoryId) => {
+    setLoading(true);
+    try {
+      console.log(`Viewing material: ${materialId}, category: ${categoryId}`);
+      const fileUrl = await subtopicMaterialsService.viewMaterial(materialId);
+      setCurrentFileUrl(fileUrl);
+      setCurrentFileName(fileName);
+      setCurrentCategoryId(categoryId);
+      setCurrentMaterialId(materialId);
+      setIsViewerModalVisible(true);
+    } catch (error) {
+      console.error('Error viewing material:', error);
+      message.error('Failed to access the file. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDownloadMaterial = async (materialId) => {
+    try {
+      const fileUrl = await subtopicMaterialsService.downloadMaterial(materialId);
+      
+      // Create a temporary link and trigger download
+      const link = document.createElement('a');
+      link.href = fileUrl;
+      
+      // Get the material details to set the correct filename
+      const material = materials[activeCategory]?.find(m => m.id === materialId);
+      if (material) {
+        // Get the file extension based on the file type
+        const extension = material.file_type === 'video' ? '.mp4' : '.pdf';
+        link.download = `${material.name}${extension}`;
+      } else {
+        link.download = ''; // Let the server set the filename via Content-Disposition
+      }
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error('Error downloading material:', error);
+      message.error('Failed to download the file. Please try again.');
+    }
+  };
+
+  const handleViewerModalClose = () => {
+    setIsViewerModalVisible(false);
+    setCurrentFileUrl(null);
+    setCurrentFileName('');
+    setCurrentCategoryId(null);
+    setCurrentMaterialId(null);
+  };
+
+  // Create plugins with proper configuration
+  const getPlugins = (isProtected) => {
+    const defaultLayoutPluginInstance = defaultLayoutPlugin({
+      sidebarTabs: (defaultTabs) => [],
+      toolbarPlugin: {
+        fullScreenPlugin: {
+          // Disable fullscreen for protected documents
+          enableShortcuts: !isProtected,
+        },
+        downloadPlugin: {
+          // Disable download for protected documents
+          enableShortcuts: !isProtected,
+          getFileNameFromUrl: (url) => url.substring(url.lastIndexOf('/') + 1),
+          // Hide download button for protected documents
+          renderDownloadButton: (props) => isProtected ? <></> : props.onClick ? 
+            <Button type="primary" icon={<DownloadOutlined />} onClick={props.onClick}>Download</Button> : null,
+        },
+        printPlugin: {
+          // Disable print for protected documents
+          enableShortcuts: !isProtected,
+          // Hide print button for protected documents
+          renderPrintButton: (props) => isProtected ? <></> : props.onClick ? 
+            <Button onClick={props.onClick}>Print</Button> : null,
+        },
+      },
+    });
+
+    const zoomPluginInstance = zoomPlugin();
+    const scrollModePluginInstance = scrollModePlugin();
+    const searchPluginInstance = searchPlugin();
+    const selectionModePluginInstance = selectionModePlugin({
+      // Disable text selection for protected documents
+      enableSelection: !isProtected,
+    });
+
+    return [
+      defaultLayoutPluginInstance,
+      zoomPluginInstance,
+      scrollModePluginInstance,
+      searchPluginInstance,
+      selectionModePluginInstance,
+    ];
+  };
+
+  const columns = [
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: 'File Type',
+      dataIndex: 'file_type',
+      key: 'file_type',
+      render: (fileType) => fileType.charAt(0).toUpperCase() + fileType.slice(1)
+    },
+    {
+      title: 'File Size',
+      dataIndex: 'file_size',
+      key: 'file_size',
+      render: (size) => `${(size / 1024 / 1024).toFixed(2)} MB`
+    },
+    {
+      title: 'Duration',
+      dataIndex: 'video_duration',
+      key: 'video_duration',
+      render: (duration) => duration ? `${duration} seconds` : 'N/A'
+    },
+    {
+      title: 'Created At',
+      dataIndex: 'created_at',
+      key: 'created_at',
+      render: (date) => new Date(date).toLocaleString()
+    },
+    {
+      title: 'Actions',
+      key: 'actions',
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="primary"
+            icon={<EyeOutlined />}
+            onClick={() => handleViewMaterial(record.id, record.name, record.material_category_id)}
+          >
+            View
+          </Button>
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record.id)}
+          >
+            Delete
+          </Button>
+        </Space>
+      ),
+    },
+  ];
+
+  const items = categories.map(category => ({
+    key: category.id.toString(),
+    label: category.name,
+    children: (
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={showModal}
+            disabled={!selectedSubtopic}
+          >
+            Add {category.name}
+          </Button>
+        </div>
+        <Table
+          columns={columns}
+          dataSource={materials[category.id] || []}
+          rowKey="id"
+          loading={loading}
+          pagination={pagination}
+          onChange={handleTableChange}
+        />
+      </div>
+    )
+  }));
+
+  return (
+    <div className="p-6">
+      <Card title="Subtopic Materials">
+        <Space direction="vertical" style={{ width: '100%' }} size="large">
+          <Space wrap>
+            <Select
+              style={{ width: 200 }}
+              placeholder="Select Course"
+              onChange={handleCourseChange}
+              options={courses.map(course => ({
+                value: course.id,
+                label: course.name
+              }))}
+            />
+            <Select
+              style={{ width: 200 }}
+              placeholder="Select Subject"
+              disabled={!selectedCourse}
+              onChange={handleSubjectChange}
+              options={subjects.map(subject => ({
+                value: subject.id,
+                label: subject.name
+              }))}
+            />
+            <Select
+              style={{ width: 200 }}
+              placeholder="Select Topic"
+              disabled={!selectedSubject}
+              onChange={handleTopicChange}
+              options={topics.map(topic => ({
+                value: topic.id,
+                label: topic.name
+              }))}
+            />
+            <Select
+              style={{ width: 200 }}
+              placeholder="Select Subtopic"
+              disabled={!selectedTopic}
+              value={selectedSubtopic}
+              onChange={handleSubtopicChange}
+              options={subtopics.map(subtopic => ({
+                value: subtopic.id,
+                label: subtopic.name
+              }))}
+            />
+          </Space>
+
+          {selectedSubtopic && (
+            <Tabs
+              items={items}
+              onChange={(key) => {
+                console.log('Tab changed to:', key);
+                const newCategoryId = parseInt(key);
+                setActiveCategory(newCategoryId);
+                // Fetch materials for the new category
+                fetchMaterials(selectedSubtopic, newCategoryId);
+              }}
+              activeKey={activeCategory?.toString()}
+            />
+          )}
+        </Space>
+
+        <Modal
+          title="Add Material"
+          open={isModalVisible}
+          onOk={handleSubmit}
+          onCancel={handleCancel}
+          confirmLoading={loading}
+        >
+          <Form form={form} layout="vertical">
+            <Form.Item
+              name="name"
+              label="Name"
+              rules={[{ required: true, message: 'Please enter material name' }]}
+            >
+              <Input />
+            </Form.Item>
+
+            <Form.Item
+              name="material_path"
+              label="Material File"
+              rules={[{ required: true, message: 'Please upload a file' }]}
+            >
+              <Upload
+                maxCount={1}
+                beforeUpload={beforeUpload}
+                accept={categories.find(c => c.id === activeCategory)?.code === 'VIDEOS' 
+                  ? 'video/*' 
+                  : 'application/pdf'}
+              >
+                <Button icon={<UploadOutlined />}>
+                  {categories.find(c => c.id === activeCategory)?.code === 'VIDEOS' 
+                    ? 'Select Video File' 
+                    : 'Select PDF File'}
+                </Button>
+              </Upload>
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        {/* Document Viewer Modal */}
+        <Modal
+          title={
+            <div>
+              <div>View {categories.find(c => c.id === currentCategoryId)?.code === 'VIDEOS' ? 'Video' : 'Document'}: {currentFileName}</div>
+              <div style={{ fontSize: '14px', color: '#666' }}>
+                Protection Status: {currentCategoryId ? (categories.find(c => c.id === currentCategoryId)?.is_protected ? 'Protected' : 'Not Protected') : 'Unknown'}
+              </div>
+            </div>
+          }
+          open={isViewerModalVisible}
+          onCancel={handleViewerModalClose}
+          width={1200}
+          style={{ top: 20 }}
+          bodyStyle={{ padding: '12px' }}
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <div>
+                {!(currentCategoryId && categories.find(c => c.id === currentCategoryId)?.is_protected) && (
+                  <Button 
+                    type="primary" 
+                    icon={<DownloadOutlined />}
+                    onClick={() => {
+                      if (currentMaterialId) {
+                        handleDownloadMaterial(currentMaterialId);
+                      } else {
+                        message.error('Could not identify the material to download');
+                      }
+                    }}
+                  >
+                    Download
+                  </Button>
+                )}
+              </div>
+              <Button onClick={handleViewerModalClose}>Close</Button>
+            </div>
+          }
+          destroyOnClose
+        >
+          {/* Conditionally render video player or document viewer based on category code */}
+          {currentFileUrl && (
+            categories.find(c => c.id === currentCategoryId)?.code === 'VIDEOS' ? (
+              <>
+                <VideoViewer 
+                  currentFileUrl={currentFileUrl}
+                  currentFileName={currentFileName}
+                  currentCategoryId={currentCategoryId}
+                  categories={categories}
+                  resolutions={['240p', '360p', '480p', '720p', '1080p']} // Example resolutions
+                />
+              </>
+            ) : (
+              <DocumentViewer 
+                currentCategoryId={currentCategoryId} 
+                categories={categories} 
+                currentFileUrl={currentFileUrl}
+                currentFileName={currentFileName}
+              />
+            )
+          )}
+        </Modal>
+      </Card>
+    </div>
+  );
+};
+
+export default SubtopicMaterialsList; 

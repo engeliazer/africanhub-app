@@ -1,0 +1,29 @@
+
+.paragraph {
+    @apply text-gray-950;
+}
+
+.paragraph--small {
+    @apply text-sm;
+}
+
+.paragraph--medium {
+    @apply text-base;
+}
+
+.paragraph--large {
+    @apply text-lg;
+}
+
+.paragraph--default {
+    @apply font-normal;
+}
+
+.paragraph--subtle {
+    @apply font-light;
+}
+
+.paragraph--highlight {
+    @apply font-semibold;
+}
+

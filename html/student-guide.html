@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCPAC System - Student Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #1d3557;
+            --accent-color: #f1faee;
+            --text-color: #2b2d42;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: white;
+            padding: 60px 0;
+            text-align: center;
+            position: relative;
+        }
+        
+        header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            z-index: 1;
+        }
+        
+        header .container {
+            position: relative;
+            z-index: 2;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+        }
+        
+        .header-button {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary-color);
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .header-button:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        
+        .print-button {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        .print-button:hover {
+            background-color: #2a4365;
+            transform: translateY(-2px);
+        }
+        
+        .navigation {
+            background-color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-list {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        .nav-item {
+            margin: 0 15px;
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .section h3 {
+            color: var(--secondary-color);
+            margin: 25px 0 15px;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+        }
+        
+        .step-list {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .step-list li {
+            margin-bottom: 10px;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li::before {
+            content: '✓';
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .tip {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .warning {
+            background-color: #ffebee;
+            border-left: 4px solid #f44336;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 99;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+        }
+        
+        .back-to-top:hover {
+            background-color: #d32f2f;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                font-size: 12pt;
+            }
+            
+            header {
+                background-color: white !important;
+                color: black !important;
+                padding: 20px 0;
+            }
+            
+            .header-button, .print-button, .back-to-top, .navigation {
+                display: none !important;
+            }
+            
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            h1, h2, h3 {
+                color: black !important;
+            }
+            
+            a {
+                color: black;
+                text-decoration: none;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .note, .tip, .warning {
+                border: 1px solid #ddd;
+                background-color: white !important;
+            }
+            
+            .feature-list li::before {
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h3>DCRC</h3>
+            <h1>OCPAC System - Student Guide</h1>
+            <p class="subtitle">Everything you need to know about using the Online CPA Review Classes Management System as a student</p>
+            <a href="https://app.ocpac.dcrc.ac.tz" class="header-button">Go to OCPAC System</a>
+            <button onclick="window.print()" class="print-button">Print PDF Guide</button>
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#getting-started" class="nav-link">Getting Started</a></li>
+                <li class="nav-item"><a href="#registration" class="nav-link">Registration</a></li>
+                <li class="nav-item"><a href="#applications" class="nav-link">Applications</a></li>
+                <li class="nav-item"><a href="#study-materials" class="nav-link">Study Materials</a></li>
+                <li class="nav-item"><a href="#online-sessions" class="nav-link">Online Sessions</a></li>
+                <li class="nav-item"><a href="#assignments" class="nav-link">Assignments</a></li>
+                <li class="nav-item"><a href="#payments" class="nav-link">Payments</a></li>
+                <li class="nav-item"><a href="#support" class="nav-link">Support</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section id="getting-started" class="section">
+            <h2>Getting Started with OCPAC</h2>
+            <p>Welcome to the Online CPA Review Classes Management System (OCPAC). This guide will help you navigate and use the system effectively as a student.</p>
+            
+            <h3>Logging In</h3>
+            <ol class="step-list">
+                <li>Visit <a href="https://ocpac.dcrc.ac.tz">https://ocpac.dcrc.ac.tz</a> OR <a href="https://app.ocpac.dcrc.ac.tz">https://app.ocpac.dcrc.ac.tz</a> in your web browser</li>
+                <li>Enter your username and password in the login form</li>
+                <li>Click the "Login" button to access your account</li>
+                <li>Upon successful login, you'll be directed to your student profile</li>
+            </ol>
+
+            <div class="note">
+                <strong>Note:</strong> If you've forgotten your password, use the "Forgot Password". You will be prompted to enter your email address. Once you submit your email and verified, your password will be reset and sent to your registered mobile number as SMS. You will then be able to login with the new password and your email address and then change your password to a more secure password.
+            </div>
+
+            <h3>Navigating the System</h3>
+            <p>The OCPAC system has a user-friendly interface with the following main components:</p>
+            
+            <ul class="feature-list">
+                <li><strong>Top Navigation Bar:</strong> Contains the system logo, module selector, and your profile menu</li>
+                <li><strong>Sidebar:</strong> Displays menu items available to students</li>
+                <li><strong>Main Content Area:</strong> Shows the content of the selected menu item</li>
+                <li><strong>Breadcrumb:</strong> Helps you track your location within the system</li>
+            </ul>
+
+            <div class="tip">
+                <strong>Tip:</strong> You can collapse the sidebar by clicking the toggle button at the top of the sidebar to get more screen space.
+            </div>
+        </section>
+
+        <section id="registration" class="section">
+            <h2>Registration Process</h2>
+            <p>To use the OCPAC system, you need to register for an account. Follow these steps to create your student account:</p>
+            
+            <h3>Creating a New Account</h3>
+            <ol class="step-list">
+                <li>Visit <a href="https://ocpac.dcrc.ac.tz">https://ocpac.dcrc.ac.tz</a> OR <a href="https://app.ocpac.dcrc.ac.tz">https://app.ocpac.dcrc.ac.tz</a> in your web browser</li>
+                <li>Click on the "Sign Up" button on the login page</li>
+                <li>Fill in your personal information in the registration form:
+                    <ul class="feature-list">
+                        <li>Full name</li>
+                        <li>Email address</li>
+                        <li>Phone number</li>
+                        <li>Password (and confirmation)</li>
+                    </ul>
+                </li>
+                <li>Read and accept the terms and conditions</li>
+                <li>Click the "Register" button to submit your information</li>
+                <li>Check your mobile phone for SMS with your account initial password</li>
+                <li>Login with your email address and the initial password sent to your mobile number. Once logged in, you will be prompted to change your password to a more secure password</li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> Your account will be created with the "Student" role by default. You cannot change your role without administrator approval.
+            </div>
+            
+        
+        </section>
+
+        <section id="applications" class="section">
+            <h2>Applying for CPA Review Classes</h2>
+            <p>The Applications module allows you to apply for CPA review classes offered through the OCPAC system.</p>
+            
+            <h3>Submitting a New Application</h3>
+            <ol class="step-list">
+                <li>Navigate to the Applications module</li>
+                <li>Click on "New Application" to start a new application</li>
+                <li>Select the CPA review class you want to apply for</li>
+                
+                <li>Review your application for accuracy</li>
+                <li>Click "Proceed to Payment" to proceed with payment</li>
+                <li>You'll be redirected to the payment page where you can make the payment using your preferred payment method</li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> Applications go through a review process before being approved or rejected. This process may take range from few minutes to few business days. Payments made may not be refundable.
+            </div>
+            
+            <h3>Tracking Your Applications</h3>
+            <ol class="step-list">
+                <li>Navigate to the Applications module</li>
+                <li>Click on "My Applications" to view all your applications</li>
+                <li>You'll see a list of your applications with their current status</li>
+                <li>Click on an application to view its details</li>
+                <li>You can track the progress of your application through various statuses:
+                    <ul class="feature-list">
+                        <li><strong>Submitted:</strong> Your application has been received</li>
+                        <li><strong>Under Review:</strong> Your application is being reviewed</li>
+                        <li><strong>Additional Information Required:</strong> You need to provide more details</li>
+                        <li><strong>Approved:</strong> Your application has been accepted</li>
+                        <li><strong>Rejected:</strong> Your application has been declined</li>
+                    </ul>
+                </li>
+            </ol>
+            
+            <div class="tip">
+                <strong>Tip:</strong> If your application status is "Additional Information Required," respond promptly to avoid delays in the review process.
+            </div>
+        </section>
+
+        <section id="study-materials" class="section">
+            <h2>Accessing Study Materials</h2>
+            <p>The Study Materials module provides access to all learning resources for your enrolled CPA review classes.</p>
+            
+            <h3>Finding Study Materials</h3>
+            <ol class="step-list">
+                <li>Navigate to the Study Materials module</li>
+                <li>Browse materials by subject, topic, or type</li>
+                <li>Use the search function to find specific materials</li>
+                <li>Click on a material to view or download it</li>
+            </ol>
+            
+            <h3>Types of Study Materials</h3>
+            <ul class="feature-list">
+                <li><strong>Lecture Notes:</strong> Comprehensive notes for each topic</li>
+                <li><strong>Video Lectures:</strong> Recorded lectures from facilitators</li>
+                <li><strong>Practice Questions:</strong> Questions to test your understanding</li>
+                <li><strong>Past Papers:</strong> Previous exam papers for practice</li>
+                <li><strong>Study Guides:</strong> Structured guides for exam preparation</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Tip:</strong> Download materials for offline access when you have a stable internet connection.
+            </div>
+            
+        
+        </section>
+
+
+
+        <section id="support" class="section">
+            <h2>Support & Assistance</h2>
+            
+            <div class="step">
+                <h3>Chat Service for Immediate Assistance</h3>
+                <p>The OCPAC system provides a real-time chat service that connects you directly with facilitators for immediate assistance with your studies.</p>
+                
+                <h4>How to Access the Chat Service</h4>
+                <ul class="feature-list">
+                    <li>Log in to your OCPAC account</li>
+                    <li>Look for the chat icon in the bottom right corner of your screen</li>
+                    <li>Click on the icon to open the chat interface</li>
+                    <li>Select the appropriate category for your question (e.g., Accounting, Taxation, etc.)</li>
+                </ul>
+                
+                <h4>Using the Chat Service Effectively</h4>
+                <ul class="feature-list">
+                    <li>Be specific about your question or issue</li>
+                    <li>Include relevant context (e.g., which topic you're studying)</li>
+                    <li>Attach screenshots or files if needed to illustrate your question</li>
+                    <li>Be patient if the facilitator needs a moment to respond</li>
+                </ul>
+                
+                <div class="tip">
+                    <strong>Tip:</strong> The chat service is available 24/7, but response times may vary depending on facilitator availability. For urgent issues, consider using the priority support option.
+                </div>
+                
+                <h4>Chat History and Follow-up</h4>
+                <ul class="feature-list">
+                    <li>All chat conversations are saved in your account</li>
+                    <li>Access your chat history from the Support section</li>
+                    <li>Continue previous conversations with the same facilitator when possible</li>
+                    <li>Rate your chat experience to help improve the service</li>
+                </ul>
+                
+                <h4>Specialized Support Categories</h4>
+                <ul class="feature-list">
+                    <li><strong>Technical Support:</strong> For issues with the platform, login, or technical difficulties</li>
+                    <li><strong>Course Content:</strong> For questions about study materials, lectures, or assignments</li>
+                    <li><strong>Exam Preparation:</strong> For guidance on exam strategies and preparation techniques</li>
+                    <li><strong>Application & Enrollment:</strong> For questions about your application status or enrollment process</li>
+                    <li><strong>Payment & Billing:</strong> For inquiries about payments, invoices, or financial matters</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Note:</strong> While the chat service is excellent for quick questions and clarifications, for complex topics that require detailed explanation, consider scheduling a one-on-one consultation with a facilitator.
+                </div>
+            </div>
+            
+            <div class="step">
+                <h3>One-on-One Consultations</h3>
+                <p>For more in-depth assistance, you can schedule one-on-one consultations with facilitators.</p>
+                <ul class="feature-list">
+                    <li>Request a consultation through the chat interface</li>
+                    <li>Select your preferred date and time from available slots</li>
+                    <li>Prepare your questions and materials in advance</li>
+                    <li>Join the video call at your scheduled time</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <a href="#" class="back-to-top" id="back-to-top">↑</a>
+
+    <script>
+        // Back to top button functionality
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Print functionality
+        function printGuide() {
+            window.print();
+        }
+    </script>
+</body>
+</html> 

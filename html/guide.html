@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCPAC System - User Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #e63946;
+            --secondary-color: #1d3557;
+            --accent-color: #f1faee;
+            --text-color: #2b2d42;
+            --light-gray: #f8f9fa;
+            --border-color: #dee2e6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 40px 0;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        header h3 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            opacity: 0.9;
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .header-button {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary-color);
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .header-button:hover {
+            background-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+        
+        .print-button {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            margin-left: 15px;
+        }
+        
+        .print-button:hover {
+            background-color: #2a4365;
+            transform: translateY(-2px);
+        }
+        
+        .navigation {
+            background-color: white;
+            padding: 15px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav-list {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+        
+        .nav-item {
+            margin: 0 15px;
+        }
+        
+        .nav-link {
+            color: var(--text-color);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 5px 0;
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .section {
+            background-color: white;
+            border-radius: 8px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+        
+        .section h3 {
+            color: var(--secondary-color);
+            margin: 25px 0 15px;
+        }
+        
+        .section p {
+            margin-bottom: 15px;
+        }
+        
+        .step-list {
+            margin-left: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .step-list li {
+            margin-bottom: 10px;
+        }
+        
+        .feature-list {
+            list-style-type: none;
+            margin-bottom: 20px;
+        }
+        
+        .feature-list li {
+            margin-bottom: 10px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .feature-list li::before {
+            content: '✓';
+            color: var(--primary-color);
+            position: absolute;
+            left: 0;
+        }
+        
+        .note {
+            background-color: #fff8e1;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .tip {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .role-card {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .benefits {
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: var(--primary-color);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-size: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 99;
+        }
+        
+        .back-to-top.visible {
+            opacity: 1;
+        }
+        
+        .back-to-top:hover {
+            background-color: #d32f2f;
+        }
+        
+        /* Print styles */
+        @media print {
+            body {
+                background-color: white;
+                font-size: 12pt;
+            }
+            
+            header {
+                background-color: white !important;
+                color: black !important;
+                padding: 20px 0;
+            }
+            
+            .header-button, .print-button, .back-to-top, .navigation {
+                display: none !important;
+            }
+            
+            .section {
+                box-shadow: none;
+                border: 1px solid #ddd;
+                page-break-inside: avoid;
+            }
+            
+            h1, h2, h3 {
+                color: black !important;
+            }
+            
+            a {
+                color: black;
+                text-decoration: none;
+            }
+            
+            .container {
+                max-width: 100%;
+                padding: 0;
+            }
+            
+            .note, .tip, .role-card, .benefits {
+                border: 1px solid #ddd;
+                background-color: white !important;
+            }
+            
+            .feature-list li::before {
+                color: black;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <h3>DCRC</h3>
+            <h1>OCPAC System User Guide</h1>
+            <p class="subtitle">Everything you need to know about using the Online CPA Review Classes Management System</p>
+            <a href="https://app.ocpac.dcrc.ac.tz" class="header-button">Go to OCPAC System</a>
+            <button onclick="window.print()" class="print-button">Print PDF Guide</button>
+        </div>
+    </header>
+
+    <nav class="navigation">
+        <div class="container">
+            <ul class="nav-list">
+                <li class="nav-item"><a href="#getting-started" class="nav-link">Getting Started</a></li>
+                <li class="nav-item"><a href="#user-roles" class="nav-link">User Roles</a></li>
+                <li class="nav-item"><a href="#applications" class="nav-link">Applications</a></li>
+                <li class="nav-item"><a href="#study-materials" class="nav-link">Study Materials</a></li>
+                <li class="nav-item"><a href="#facilitation" class="nav-link">Facilitation</a></li>
+                <li class="nav-item"><a href="#support" class="nav-link">Support</a></li>
+                <li class="nav-item"><a href="#accounting" class="nav-link">Accounting</a></li>
+                <li class="nav-item"><a href="#reports" class="nav-link">Reports</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section id="getting-started" class="section">
+            <h2>Getting Started with OCPAC</h2>
+            <p>Welcome to the Online CPA Review Classes Management System (OCPAC). This guide will help you navigate and use the system effectively based on your role and permissions.</p>
+            
+            <h3>Logging In</h3>
+            <ol class="step-list">
+                <li>Visit <a href="https://app.ocpac.dcrc.ac.tz">https://app.ocpac.dcrc.ac.tz</a> in your web browser</li>
+                <li>Enter your username and password in the login form</li>
+                <li>Click the "Login" button to access your account</li>
+                <li>Upon successful login, you'll be directed to your dashboard</li>
+            </ol>
+
+            <div class="note">
+                <strong>Note:</strong> If you've forgotten your password, use the "Forgot Password" link on the login page to reset it.
+            </div>
+
+            <h3>Navigating the System</h3>
+            <p>The OCPAC system has a user-friendly interface with the following main components:</p>
+            
+            <ul class="feature-list">
+                <li><strong>Top Navigation Bar:</strong> Contains the system logo, module selector, role selector, and user profile menu</li>
+                <li><strong>Sidebar:</strong> Displays menu items based on your role and permissions</li>
+                <li><strong>Main Content Area:</strong> Shows the content of the selected menu item</li>
+                <li><strong>Breadcrumb:</strong> Helps you track your location within the system</li>
+            </ul>
+
+            <div class="tip">
+                <strong>Tip:</strong> You can collapse the sidebar by clicking the toggle button at the top of the sidebar to get more screen space.
+            </div>
+        </section>
+
+        <section id="user-roles" class="section">
+            <h2>Understanding User Roles</h2>
+            <p>The OCPAC system uses role-based access control to manage user permissions. Each user is assigned one or more roles, which determine what they can access and do within the system.</p>
+            
+            <div class="role-card">
+                <h3>System Administrator (SYSADMIN)</h3>
+                <p>System Administrators have full access to all features and functionalities of the OCPAC system. They can:</p>
+                <ul class="feature-list">
+                    <li>Manage all user accounts and roles</li>
+                    <li>Configure system settings</li>
+                    <li>Access all modules and features</li>
+                    <li>Manage support and chat functionality</li>
+                    <li>View and generate all reports</li>
+                </ul>
+            </div>
+            
+            <div class="role-card">
+                <h3>Support Staff</h3>
+                <p>Support staff members can:</p>
+                <ul class="feature-list">
+                    <li>Access the support module</li>
+                    <li>Respond to user inquiries</li>
+                    <li>View user information</li>
+                    <li>Generate support reports</li>
+                </ul>
+            </div>
+            
+            <div class="role-card">
+                <h3>Facilitator</h3>
+                <p>Facilitators can:</p>
+                <ul class="feature-list">
+                    <li>Access the facilitation module</li>
+                    <li>Manage study materials</li>
+                    <li>Track student progress</li>
+                    <li>Generate facilitation reports</li>
+                </ul>
+            </div>
+            
+            <div class="role-card">
+                <h3>Student</h3>
+                <p>Students are the primary users of the OCPAC system. They can:</p>
+                <ul class="feature-list">
+                    <li>View their dashboard</li>
+                    <li>Access study materials</li>
+                    <li>Submit assignments</li>
+                    <li>Track their progress</li>
+                    <li>Access support when needed</li>
+                </ul>
+            </div>
+            
+            <div class="role-card">
+                <h3>Accountant</h3>
+                <p>Accountants can:</p>
+                <ul class="feature-list">
+                    <li>Access the accounting module</li>
+                    <li>Manage financial transactions</li>
+                    <li>Generate financial reports</li>
+                    <li>Track payments and invoices</li>
+                </ul>
+            </div>
+            
+            <div class="tip">
+                <strong>Tip:</strong> You can switch between roles using the role selector in the top navigation bar if you have multiple roles assigned to your account.
+            </div>
+        </section>
+
+        <section id="applications" class="section">
+            <h2>Managing Applications</h2>
+            <p>The Applications module allows you to manage student applications for CPA review classes.</p>
+            
+            <h3>For Students</h3>
+            <ol class="step-list">
+                <li>Navigate to the Applications module</li>
+                <li>Click on "New Application" to start a new application</li>
+                <li>Fill in all required information in the application form</li>
+                <li>Upload any necessary documents</li>
+                <li>Submit your application</li>
+                <li>Track the status of your application in the "My Applications" section</li>
+            </ol>
+            
+            <h3>For Administrators</h3>
+            <ol class="step-list">
+                <li>Navigate to the Applications module</li>
+                <li>View all applications in the "All Applications" section</li>
+                <li>Filter applications by status, date, or other criteria</li>
+                <li>Click on an application to view details</li>
+                <li>Update the application status (Pending, Approved, Rejected)</li>
+                <li>Add notes or comments to the application</li>
+                <li>Generate application reports as needed</li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> Applications go through a review process before being approved or rejected. This process may take several business days.
+            </div>
+        </section>
+
+        <section id="study-materials" class="section">
+            <h2>Accessing Study Materials</h2>
+            <p>The Study Materials module provides access to all learning resources for CPA review classes.</p>
+            
+            <h3>Finding Study Materials</h3>
+            <ol class="step-list">
+                <li>Navigate to the Study Materials module</li>
+                <li>Browse materials by subject, topic, or type</li>
+                <li>Use the search function to find specific materials</li>
+                <li>Click on a material to view or download it</li>
+            </ol>
+            
+            <h3>Types of Study Materials</h3>
+            <ul class="feature-list">
+                <li><strong>Lecture Notes:</strong> Comprehensive notes for each topic</li>
+                <li><strong>Video Lectures:</strong> Recorded lectures from facilitators</li>
+                <li><strong>Practice Questions:</strong> Questions to test your understanding</li>
+                <li><strong>Past Papers:</strong> Previous exam papers for practice</li>
+                <li><strong>Study Guides:</strong> Structured guides for exam preparation</li>
+            </ul>
+            
+            <div class="tip">
+                <strong>Tip:</strong> Download materials for offline access when you have a stable internet connection.
+            </div>
+        </section>
+
+        <section id="facilitation" class="section">
+            <h2>Facilitation Management</h2>
+            <p>The Facilitation module helps manage the teaching and learning process for CPA review classes.</p>
+            
+            <h3>For Facilitators</h3>
+            <ol class="step-list">
+                <li>Navigate to the Facilitation module</li>
+                <li>View your assigned classes and students</li>
+                <li>Upload and manage study materials</li>
+                <li>Schedule and manage online sessions</li>
+                <li>Track student attendance and participation</li>
+                <li>Provide feedback on student assignments</li>
+                <li>Generate facilitation reports</li>
+            </ol>
+            
+            <h3>For Students</h3>
+            <ol class="step-list">
+                <li>Navigate to the Facilitation module</li>
+                <li>View your class schedule</li>
+                <li>Join online sessions at the scheduled time</li>
+                <li>Submit assignments and view feedback</li>
+                <li>Track your attendance and participation</li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> Online sessions are conducted through the integrated video conferencing tool. Make sure your device has a working camera and microphone.
+            </div>
+        </section>
+
+        <section id="support" class="section">
+            <h2>Getting Support</h2>
+            <p>The Support module provides assistance for users experiencing issues or with questions about the OCPAC system.</p>
+            
+            <h3>For Students</h3>
+            <ol class="step-list">
+                <li>Navigate to the Support module</li>
+                <li>Click on "New Support Request"</li>
+                <li>Select the category of your issue</li>
+                <li>Provide a detailed description of your problem</li>
+                <li>Attach any relevant screenshots or files</li>
+                <li>Submit your request</li>
+                <li>Track the status of your request in the "My Requests" section</li>
+            </ol>
+            
+            <h3>For Support Staff</h3>
+            <ol class="step-list">
+                <li>Navigate to the Support module</li>
+                <li>View all support requests in the "All Requests" section</li>
+                <li>Filter requests by status, priority, or category</li>
+                <li>Click on a request to view details</li>
+                <li>Respond to the request with a solution or additional questions</li>
+                <li>Update the request status (Open, In Progress, Resolved)</li>
+                <li>Generate support reports as needed</li>
+            </ol>
+            
+            <div class="tip">
+                <strong>Tip:</strong> For urgent issues, use the chat feature in the bottom right corner of the screen for immediate assistance.
+            </div>
+        </section>
+
+        <section id="accounting" class="section">
+            <h2>Accounting Features</h2>
+            <p>The Accounting module manages financial transactions related to CPA review classes.</p>
+            
+            <h3>For Accountants</h3>
+            <ol class="step-list">
+                <li>Navigate to the Accounting module</li>
+                <li>View financial dashboard with key metrics</li>
+                <li>Manage invoices and payments</li>
+                <li>Track student fees and payments</li>
+                <li>Generate financial reports</li>
+                <li>Reconcile accounts</li>
+            </ol>
+            
+            <h3>For Students</h3>
+            <ol class="step-list">
+                <li>Navigate to the Accounting module</li>
+                <li>View your payment history</li>
+                <li>Download invoices and receipts</li>
+                <li>Make payments for classes</li>
+                <li>View your financial statements</li>
+            </ol>
+            
+            <div class="note">
+                <strong>Note:</strong> All financial transactions are securely processed and recorded in the system.
+            </div>
+        </section>
+
+        <section id="reports" class="section">
+            <h2>Generating Reports</h2>
+            <p>The Reports module allows you to generate various reports based on your role and permissions.</p>
+            
+            <h3>Available Reports</h3>
+            <ul class="feature-list">
+                <li><strong>Application Reports:</strong> Track application status and statistics</li>
+                <li><strong>Student Reports:</strong> View student enrollment and progress</li>
+                <li><strong>Facilitation Reports:</strong> Monitor teaching and learning activities</li>
+                <li><strong>Financial Reports:</strong> Track revenue, expenses, and financial metrics</li>
+                <li><strong>Support Reports:</strong> Analyze support requests and resolution times</li>
+            </ul>
+            
+            <h3>Generating a Report</h3>
+            <ol class="step-list">
+                <li>Navigate to the Reports module</li>
+                <li>Select the type of report you want to generate</li>
+                <li>Set the parameters for the report (date range, filters, etc.)</li>
+                <li>Click "Generate Report"</li>
+                <li>View the report in the browser</li>
+                <li>Download the report in your preferred format (PDF, Excel, etc.)</li>
+            </ol>
+            
+            <div class="tip">
+                <strong>Tip:</strong> You can schedule reports to be automatically generated and emailed to you at regular intervals.
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Need Additional Help?</h2>
+            <p>If you need further assistance with using the OCPAC system, please contact the support team:</p>
+            
+            <div class="benefits">
+                <h3>Support Options</h3>
+                <ul class="feature-list">
+                    <li><strong>In-App Chat:</strong> Use the chat feature in the bottom right corner of the screen</li>
+                    <li><strong>Email Support:</strong> Send an email to support@ocpac.dcrc.ac.tz</li>
+                    <li><strong>Phone Support:</strong> Call +255 XX XXX XXXX during business hours</li>
+                    <li><strong>Knowledge Base:</strong> Visit our knowledge base for additional resources and FAQs</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <a href="#" class="back-to-top" id="back-to-top">↑</a>
+
+    <script>
+        // Back to top button functionality
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopButton.classList.add('visible');
+            } else {
+                backToTopButton.classList.remove('visible');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+        
+        // Print functionality
+        function printGuide() {
+            window.print();
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,55 @@
+.heading--h1 {
+    @apply text-2xl;
+}
+
+.heading--h2 {
+    @apply text-xl;
+}
+
+.heading--h3 {
+    @apply text-lg;
+}
+
+.heading--h4 {
+    @apply text-base;
+}
+
+.heading--h5 {
+    @apply text-sm;
+}
+
+.heading--h6 {
+    @apply text-xs;
+}
+
+.heading__bold {
+    @apply font-bold;
+}
+
+.heading__light {
+    @apply font-light;
+}
+
+.heading__italic {
+    @apply italic;
+}
+
+.heading__medium {
+    @apply font-medium;
+}
+
+.heading__normal {
+    @apply font-normal;
+}
+
+.heading__semibold {
+    @apply font-semibold;
+}
+
+.heading__extrabold {
+    @apply font-extrabold;
+}
+
+.heading__black {
+    @apply font-black;
+}
