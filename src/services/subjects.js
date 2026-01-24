@@ -2,13 +2,9 @@ import axios from './axios';
 import { SUBJECTS_RESOURCE, SUBJECTS_WITH_TOPIC_SUBTOPIC_RESOURCE } from './constants/endpoints';
 
 const subjectsService = {
-  getSubjects: async (page = 1, perPage = 10, courseId = null) => {
+  getSubjects: async (page = 1, perPage = 10) => {
     try {
-      let url = `${SUBJECTS_RESOURCE}?page=${page}&per_page=${perPage}`;
-      
-      if (courseId) {
-        url += `&course_id=${parseInt(courseId, 10)}`;
-      }
+      const url = `${SUBJECTS_RESOURCE}?page=${page}&per_page=${perPage}`;
       
       console.log('API request URL:', url);
       const response = await axios.get(url);
@@ -31,10 +27,7 @@ const subjectsService = {
 
   updateSubject: async (subjectId, subjectData) => {
     try {
-      const response = await axios.put(`${SUBJECTS_RESOURCE}/${subjectId}`, {
-        ...subjectData,
-        course_id: subjectData.course_id
-      });
+      const response = await axios.put(`${SUBJECTS_RESOURCE}/${subjectId}`, subjectData);
       return response.data;
     } catch (error) {
       throw error.response?.data || error.message;
@@ -45,6 +38,28 @@ const subjectsService = {
     try {
       const response = await axios.delete(`${SUBJECTS_RESOURCE}/${subjectId}`);
       return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getSubjectById: async (subjectId) => {
+    try {
+      const response = await axios.get(`/api/subjects/${subjectId}`);
+      console.log('Subject by ID response:', response.data);
+      return response.data;
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
+  },
+
+  getAvailableSubjects: async () => {
+    try {
+      const response = await axios.get('/api/available-subjects');
+      return {
+        status: response.data.status,
+        data: response.data.data || []
+      };
     } catch (error) {
       throw error.response?.data || error.message;
     }

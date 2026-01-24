@@ -23,12 +23,18 @@ const useIdleTimeout = (timeout = SECURITY_CONFIG.idleTimeout) => {
       await authService.logout();
       dispatch(onClear());
       localStorage.removeItem('user_info');
+      // Clear module selection information
+      localStorage.removeItem('selectedModule');
+      localStorage.removeItem('moduleSelectionShown');
       navigate('/login');
       message.warning('You have been logged out due to inactivity');
     } catch (error) {
       console.error('Logout error:', error);
       dispatch(onClear());
       localStorage.removeItem('user_info');
+      // Clear module selection information even on error
+      localStorage.removeItem('selectedModule');
+      localStorage.removeItem('moduleSelectionShown');
       navigate('/login');
       message.warning('You have been logged out due to inactivity');
     }

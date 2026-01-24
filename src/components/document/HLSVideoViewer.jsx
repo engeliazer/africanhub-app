@@ -1024,7 +1024,7 @@ const HLSVideoViewer = ({
       {isLoading && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 bg-opacity-90 z-50">
           <div className="text-center p-8 rounded-lg">
-            <h2 className="text-2xl font-bold text-white mb-4">Welcome to Online CPA Review Classes</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Welcome to The African Hub</h2>
             <p className="text-gray-300 mb-6">{loadingMessage}</p>
             <Spin 
               indicator={<LoadingOutlined style={{ fontSize: 48, color: '#1890ff' }} spin />} 
@@ -1131,7 +1131,7 @@ const HLSVideoViewer = ({
               }}
             >
               {Array(3).fill().map((_, j) => (
-                <span key={j}>DCRC </span>
+                <span key={j}>The African Hub </span>
               ))}
             </div>
           ))}

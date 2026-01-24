@@ -5,12 +5,14 @@ import usersService from '../../services/users';
 import userDevicesService from '../../services/userDevices';
 import accountingService from '../../services/accounting';
 import { formatDate } from '../../utils/dateUtils';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { Search } = Input;
 const { TabPane } = Tabs;
 const { Text, Title } = Typography;
 
 const User = () => {
+  const { colors } = useTheme();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
@@ -98,11 +100,11 @@ const User = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small">
           <div>
-            <span className="text-gray-500">Visitor ID: </span>
+            <span style={{ color: colors.textMuted }}>Visitor ID: </span>
             <Tag color="purple">{record.visitor_id}</Tag>
           </div>
           <div>
-            <span className="text-gray-500">Status: </span>
+            <span style={{ color: colors.textMuted }}>Status: </span>
             <Tag color={record.is_primary ? 'green' : 'blue'}>
               {record.is_primary ? 'Primary' : 'Secondary'}
             </Tag>
@@ -116,17 +118,17 @@ const User = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small">
           <div>
-            <span className="text-gray-500">Browser: </span>
-            <span>{record.browser_name}</span>
+            <span style={{ color: colors.textMuted }}>Browser: </span>
+            <span style={{ color: colors.textPrimary }}>{record.browser_name}</span>
             {record.browser_version && (
-              <span className="text-gray-500 ml-2">({record.browser_version})</span>
+              <span style={{ color: colors.textMuted, marginLeft: '8px' }}>({record.browser_version})</span>
             )}
           </div>
           <div>
-            <span className="text-gray-500">OS: </span>
-            <span>{record.os_name}</span>
+            <span style={{ color: colors.textMuted }}>OS: </span>
+            <span style={{ color: colors.textPrimary }}>{record.os_name}</span>
             {record.os_version && (
-              <span className="text-gray-500 ml-2">({record.os_version})</span>
+              <span style={{ color: colors.textMuted, marginLeft: '8px' }}>({record.os_version})</span>
             )}
           </div>
         </Space>
@@ -138,12 +140,12 @@ const User = () => {
       render: (_, record) => (
         <Space direction="vertical" size="small">
           <div>
-            <span className="text-gray-500">Created at: </span>
-            <span>{new Date(record.created_at).toLocaleString()}</span>
+            <span style={{ color: colors.textMuted }}>Created at: </span>
+            <span style={{ color: colors.textPrimary }}>{new Date(record.created_at).toLocaleString()}</span>
           </div>
           <div>
-            <span className="text-gray-500">Last used at: </span>
-            <span>{new Date(record.last_used).toLocaleString()}</span>
+            <span style={{ color: colors.textMuted }}>Last used at: </span>
+            <span style={{ color: colors.textPrimary }}>{new Date(record.last_used).toLocaleString()}</span>
           </div>
         </Space>
       ),
@@ -157,8 +159,19 @@ const User = () => {
             type="primary"
             size="small"
             onClick={() => handleMakePrimary(record.id)}
-            className="bg-blue-500 hover:bg-blue-600 border-blue-500 hover:border-blue-600"
+            style={{
+              background: colors.primaryAccent,
+              borderColor: colors.primaryAccent,
+            }}
             icon={<DesktopOutlined />}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = colors.secondaryAccent;
+              e.currentTarget.style.borderColor = colors.secondaryAccent;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = colors.primaryAccent;
+              e.currentTarget.style.borderColor = colors.primaryAccent;
+            }}
           >
             Set as Primary
           </Button>
@@ -307,35 +320,45 @@ const User = () => {
               <TabPane tab="Profile Information" key="profile">
                 <div className="space-y-4">
                   <div className="flex items-center justify-center mb-6">
-                    <div className="w-24 h-24 bg-gray-200 rounded-full flex items-center justify-center">
-                      <UserOutlined style={{ fontSize: '2rem' }} />
+                    <div 
+                      style={{
+                        width: '96px',
+                        height: '96px',
+                        background: colors.cardDepth,
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <UserOutlined style={{ fontSize: '2rem', color: colors.textPrimary }} />
                     </div>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Full Name</p>
-                    <p className="text-lg">{`${selectedUser.first_name} ${selectedUser.middle_name || ''} ${selectedUser.last_name}`.trim()}</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Full Name</p>
+                    <p style={{ fontSize: '18px', color: colors.textPrimary }}>{`${selectedUser.first_name} ${selectedUser.middle_name || ''} ${selectedUser.last_name}`.trim()}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Email</p>
-                    <p className="text-lg">{selectedUser.email}</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Email</p>
+                    <p style={{ fontSize: '18px', color: colors.textPrimary }}>{selectedUser.email}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Phone</p>
-                    <p className="text-lg">{selectedUser.phone}</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Phone</p>
+                    <p style={{ fontSize: '18px', color: colors.textPrimary }}>{selectedUser.phone}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Status</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Status</p>
                     <Tag color={selectedUser.status === 'ACTIVE' ? 'green' : 'red'}>
                       {selectedUser.status}
                     </Tag>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Registration Mode</p>
-                    <p className="text-lg">{selectedUser.registration_mode}</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Registration Mode</p>
+                    <p style={{ fontSize: '18px', color: colors.textPrimary }}>{selectedUser.registration_mode}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-500">Created At</p>
-                    <p className="text-lg">{new Date(selectedUser.created_at).toLocaleString()}</p>
+                    <p style={{ fontSize: '14px', color: colors.textMuted, marginBottom: '4px' }}>Created At</p>
+                    <p style={{ fontSize: '18px', color: colors.textPrimary }}>{new Date(selectedUser.created_at).toLocaleString()}</p>
                   </div>
                 </div>
               </TabPane>
@@ -379,8 +402,15 @@ const User = () => {
                       }}
                     />
                   ) : (
-                    <div className="text-center p-8 bg-gray-50 rounded">
-                      <Text type="secondary">No payment history available for this user</Text>
+                    <div 
+                      style={{
+                        textAlign: 'center',
+                        padding: '32px',
+                        background: colors.cardDepth,
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <Text style={{ color: colors.textSecondary }}>No payment history available for this user</Text>
                     </div>
                   )}
                 </div>

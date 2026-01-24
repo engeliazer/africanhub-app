@@ -762,7 +762,7 @@ const DocumentViewer = ({ currentCategoryId, categories, currentFileUrl, current
                                         pointerEvents: 'none',
                                         opacity: isProtected ? 0.4 : 0.2 // More visible for protected docs
                                     }}>
-                                        ONLINE CPA REVIEW CLASSES
+                                        THE AFRICAN HUB
                                     </div>
                                 </div>
                             </div>

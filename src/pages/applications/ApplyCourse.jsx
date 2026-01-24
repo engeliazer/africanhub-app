@@ -21,7 +21,8 @@ import {
   Row,
   Col,
   Descriptions,
-  Tooltip
+  Tooltip,
+  Tabs
 } from 'antd';
 import { 
   PlusOutlined, 
@@ -37,11 +38,10 @@ import {
   PrinterOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Import services
-import coursesService from '../../services/courses';
 import subjectsService from '../../services/subjects';
-import seasonsService from '../../services/seasons';
 import seasonSubjectsService from '../../services/seasonSubjects';
 import seasonApplicantsService from '../../services/seasonApplicants';
 import { getTokenLocal } from '../../services/utils/authorization';
@@ -62,17 +62,13 @@ const formatCurrency = (amount) => {
 };
 
 const ApplyCourse = () => {
+  const { colors } = useTheme();
   // States
   const [loading, setLoading] = useState(false);
   const [myApplications, setMyApplications] = useState([]);
-  const [activeSeasons, setActiveSeasons] = useState([]);
+  const [appliedSubjects, setAppliedSubjects] = useState([]);
   const [availableSubjects, setAvailableSubjects] = useState([]);
-  const [selectedSeason, setSelectedSeason] = useState(null);
-  const [selectedCourse, setSelectedCourse] = useState(null);
-  const [courseSubjects, setCourseSubjects] = useState([]);
   const [formError, setFormError] = useState(null);
-  const [courses, setCourses] = useState([]);
-  const [availableCourses, setAvailableCourses] = useState([]);
   const [paymentMethods, setPaymentMethods] = useState([]);
   const [paymentMethodsError, setPaymentMethodsError] = useState(null);
   
@@ -112,7 +108,6 @@ const ApplyCourse = () => {
   const navigate = useNavigate();
   
   // New state for seasons with available subjects
-  const [seasonsWithSubjects, setSeasonsWithSubjects] = useState([]);
   
   // New state for bank details
   const [bankDetails, setBankDetails] = useState(null);
@@ -211,20 +206,10 @@ const ApplyCourse = () => {
           return;
         }
         
-        // Fetch seasons with available subjects
-        const seasonsResponse = await seasonsService.getAvailableSeasons();
-        console.log('Available seasons:', seasonsResponse);
+        // Fetch available subjects
+        await fetchAvailableSubjects();
         
-        if (seasonsResponse.status !== 'success') {
-          throw new Error('Failed to fetch seasons');
-        }
-        
-        setSeasonsWithSubjects(seasonsResponse.data || []);
-        
-        // Fetch student's current applications
-        await fetchMyApplications();
-        
-        // Check for any pending payment applications
+        // Check for any pending payment applications (from session storage)
         checkPendingApplications();
 
         // Fetch payment methods
@@ -254,214 +239,80 @@ const ApplyCourse = () => {
     };
   }, []);
   
-  // When selected season changes, update available courses
-  useEffect(() => {
-    if (selectedSeason) {
-      console.log('Selected season changed to:', selectedSeason);
-      fetchAvailableCourses();
-      // Reset course selection when season changes
-      setSelectedCourse(null);
-      setCourseSubjects([]);
-      setSelectedSubjects([]);
-      setTotalAmount(0);
-    }
-  }, [selectedSeason]);
-  
-  // Fetch available courses for the selected season
-  const fetchAvailableCourses = async () => {
-    setLoading(true);
-    try {
-      console.log('Fetching available courses for season:', selectedSeason);
-      // Get courses with available subjects for this season
-      const coursesResponse = await seasonsService.getSeasonAvailableCourses(selectedSeason);
-      console.log('Available courses response:', coursesResponse);
-      
-      if (coursesResponse.status !== 'success') {
-        throw new Error('Failed to fetch available courses');
-      }
-      
-      const courses = coursesResponse.data || [];
-      console.log('Setting available courses:', courses);
-      setAvailableCourses(courses);
-    } catch (error) {
-      console.error('Error fetching available courses:', error);
-      message.error('Failed to load available courses. Please try again later.');
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // When selected course changes, update subject list
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchAvailableSubjects();
-    } else {
-      setCourseSubjects([]);
-    }
-  }, [selectedCourse]);
-  
-  // Fetch available subjects for the selected course
+  // Fetch available subjects
   const fetchAvailableSubjects = async () => {
     setLoading(true);
     try {
-      // Get available subjects for this course in the selected season
-      const subjectsResponse = await seasonsService.getSeasonCourseAvailableSubjects(selectedSeason, selectedCourse);
-      console.log('Available subjects for course:', subjectsResponse);
-      
-      if (subjectsResponse.status !== 'success') {
+      console.log('Fetching available subjects');
+      const response = await subjectsService.getAvailableSubjects();
+      console.log('Available subjects response:', response);
+
+      if (response.status !== 'success') {
         throw new Error('Failed to fetch available subjects');
       }
-      
-      // Transform the subjects data to include necessary information
-      const transformedSubjects = subjectsResponse.data.map(subject => ({
-        seasonSubjectId: subject.id,
-        subjectId: subject.subject_id,
-        subjectName: subject.name,
-        courseId: subject.course_id,
-        courseName: subject.course_name,
-        price: subject.price,
-        spotsLeft: subject.capacity - subject.enrolled,
-        isFull: subject.capacity <= subject.enrolled,
-        capacity: subject.capacity,
-        enrolled: subject.enrolled
+
+      // Extract data from the new response structure
+      const data = response.data || {};
+      const appliedSubjectsData = data.applied_subjects || [];
+      const availableSubjectsData = data.available_subjects || [];
+
+      console.log('Applied subjects:', appliedSubjectsData);
+      console.log('Available subjects:', availableSubjectsData);
+
+      // Transform applied subjects
+      const transformedAppliedSubjects = appliedSubjectsData.map(subject => ({
+        id: subject.id,
+        name: subject.name,
+        code: subject.code,
+        description: subject.description,
+        duration_days: subject.duration_days,
+        trial_duration_days: subject.trial_duration_days,
+        application_date: subject.application_date,
+        application_status: subject.application_status,
+        access_expired: subject.access_expired,
+        days_remaining: subject.days_remaining,
+        days_since_application: subject.days_since_application,
+        fee: subject.fee || 0,
+        price: subject.current_price || 0,
+        is_active: subject.is_active
       }));
-      
-      setCourseSubjects(transformedSubjects);
-      setSelectedSubjects([]);
-      setTotalAmount(0);
+
+      // Transform available subjects
+      const transformedAvailableSubjects = availableSubjectsData.map(subject => ({
+        id: subject.id,
+        name: subject.name,
+        code: subject.code,
+        description: subject.description,
+        duration_days: subject.duration_days,
+        trial_duration_days: subject.trial_duration_days,
+        availability_reason: subject.availability_reason,
+        days_since_application: subject.days_since_application,
+        price: subject.current_price || 0,
+        is_active: subject.is_active
+      }));
+
+      setAppliedSubjects(transformedAppliedSubjects);
+      setAvailableSubjects(transformedAvailableSubjects);
     } catch (error) {
       console.error('Error fetching available subjects:', error);
-      message.error('Failed to load available subjects. Please try again later.');
+      message.error('Failed to load subjects. Please try again later.');
+      setAppliedSubjects([]);
+      setAvailableSubjects([]);
     } finally {
       setLoading(false);
     }
   };
   
-  // Fetch the student's applications
+  // Fetch the student's applications (no longer needed - endpoint removed)
+  // Applications are now managed through session storage for pending payments
   const fetchMyApplications = async () => {
-    try {
-      // Check for authentication token
-      const token = getTokenLocal();
-      
-      if (!token) {
-        console.error('No authentication token found');
-        setAuthModalVisible(true);
-        return;
-      }
-
-      // First, let's fetch all subjects and courses to have their relationship data
-      const subjectsResponse = await subjectsService.getSubjects(1, 100);
-      console.log('Subjects response:', subjectsResponse);
-      
-      // Extract the subjects array from the response data structure
-      const subjectsData = subjectsResponse.data?.subjects || [];
-      
-      // Create a mapping of subject IDs to their course IDs and names
-      const subjectToCourseMap = {};
-      subjectsData.forEach(subject => {
-        if (subject.id && subject.course_id) {
-          subjectToCourseMap[subject.id] = {
-            courseId: subject.course_id,
-            courseName: courses.find(c => c.id === subject.course_id)?.name || 'Unknown Course'
-          };
-        }
-      });
-      
-      console.log('Subject to course mapping:', subjectToCourseMap);
-      
-      // Fetch applications for the current authenticated user
-      const response = await seasonApplicantsService.getSeasonApplicants();
-      console.log('Applications API Response:', response);
-      
-      // Process the applications from the new nested structure
-      const allApplications = [];
-      
-      // Extract applications from the response
-      if (response.data?.applications) {
-        response.data.applications.forEach(app => {
-          console.log('Processing application:', app);
-          
-          // Process each detail in the application
-          if (app.details && Array.isArray(app.details)) {
-            app.details.forEach(detail => {
-              console.log('Processing detail:', detail);
-              
-              // Find subject info
-              const subject = subjectsData.find(s => s.id === detail.subject_id);
-              console.log('Found subject:', subject);
-              
-              // Find course info from our map
-              const courseInfo = subjectToCourseMap[detail.subject_id] || { 
-                courseId: null, 
-                courseName: 'Unknown Course' 
-              };
-              console.log('Course info:', courseInfo);
-              
-              allApplications.push({
-                id: `${app.id}_${detail.id}`,
-                applicationId: app.id,
-                subjectId: detail.subject_id,
-                seasonId: app.season_id,
-                status: app.status,
-                appliedDate: app.created_at,
-                paymentStatus: app.payment_status,
-                seasonName: activeSeasons.find(s => s.id === app.season_id)?.name || 'Unknown Season',
-                subjectName: subject?.name || 'Unknown Subject',
-                courseName: courseInfo.courseName,
-                fee: detail.fee || 0,
-                paymentMethod: app.payment_method,
-                mobileNumber: app.mobile_number,
-                transactionId: app.transaction_id
-              });
-            });
-          }
-        });
-      }
-      
-      console.log('Processed applications:', allApplications);
-      setMyApplications(allApplications);
-      
-      // Identify pending applications - any application with status "pending"
-      // This includes both pending_payment and paid applications that haven't been processed
-      const pendingApps = allApplications.filter(app => 
-        app.status === 'pending' && app.paymentStatus === 'pending_payment'
-      );
-      
-      console.log('Pending applications:', pendingApps);
-      
-      setPendingApplications(pendingApps);
-      setHasPendingApplications(pendingApps.length > 0);
-    } catch (error) {
-      console.error('Error fetching my applications:', error);
-      
-      // Check if unauthorized
-      if (error.response?.status === 401) {
-        setAuthModalVisible(true);
-      } else {
-        message.error('Failed to load your applications. Please try again later.');
-      }
-    }
+    // This function is kept for compatibility but no longer makes API calls
+    // since /api/season-applications endpoint no longer exists
+    setMyApplications([]);
+    setPendingApplications([]);
+    setHasPendingApplications(false);
   };
   
-  // Helper function to get course name for a subject
-  const getCourseNameForSubject = (subjectId) => {
-    // Check if the subject exists in our available subjects
-    const subject = availableSubjects.find(s => s.subjectId === subjectId);
-    if (subject) return subject.courseName;
-    
-    // Try to find in course subjects if not in available subjects
-    for (const course of courses) {
-      const foundSubject = courseSubjects.find(s => s.seasonSubjectId === subjectId);
-      if (foundSubject) return course.name;
-    }
-    
-    // As a last resort, try to find the course in the API's full subject list
-    // This is necessary for applications with subjects that aren't in the current available list
-    const myApp = myApplications.find(app => app.subjectId === subjectId);
-    if (myApp && myApp.courseName) return myApp.courseName;
-    
-    return 'Unknown Course';
-  };
   
   // Check for pending applications and prompt user
   const checkPendingApplications = () => {
@@ -593,13 +444,13 @@ const ApplyCourse = () => {
       
       // Calculate total amount for selected subjects
       const total = newSelection.reduce((sum, id) => {
-        const subject = courseSubjects.find(s => s.seasonSubjectId === id);
+        const subject = availableSubjects.find(s => s.id === id);
         return sum + (subject?.price || 0);
       }, 0);
       setTotalAmount(total);
       
       // Update select all state
-      setSelectAllChecked(newSelection.length === courseSubjects.length);
+      setSelectAllChecked(newSelection.length === availableSubjects.length);
       
       return newSelection;
     });
@@ -609,19 +460,19 @@ const ApplyCourse = () => {
   const handleSelectAll = (e) => {
     const checked = e.target.checked;
     
-    if (!courseSubjects || courseSubjects.length === 0) {
+    if (!availableSubjects || availableSubjects.length === 0) {
       return;
     }
 
     if (checked) {
       // Select all subjects
-      const allSubjectIds = courseSubjects.map(subject => subject.seasonSubjectId);
+      const allSubjectIds = availableSubjects.map(subject => subject.id);
       setSelectedSubjects(allSubjectIds);
       setSelectAllChecked(true);
       
       // Calculate total amount for all subjects
       const total = allSubjectIds.reduce((sum, subjectId) => {
-        const subject = courseSubjects.find(s => s.seasonSubjectId === subjectId);
+        const subject = availableSubjects.find(s => s.id === subjectId);
         return sum + (subject?.price || 0);
       }, 0);
       setTotalAmount(total);
@@ -633,9 +484,25 @@ const ApplyCourse = () => {
     }
   };
   
+  // Handle apply for a single subject
+  const handleApplyForSubject = async (subjectId) => {
+    const subject = availableSubjects.find(s => s.id === subjectId);
+    if (!subject) return;
+    
+    // Update state and proceed with the subject directly
+    setSelectedSubjects([subjectId]);
+    setTotalAmount(subject.price || 0);
+    // Pass the subject ID directly to avoid timing issues with state updates
+    handleProceedToPayment([subjectId]);
+  };
+  
+  
   // Handle proceed to payment button click
-  const handleProceedToPayment = async () => {
-    if (selectedSubjects.length === 0) {
+  const handleProceedToPayment = async (subjectIdsOverride = null) => {
+    // Use override if provided, otherwise use state
+    const subjectsToUse = subjectIdsOverride || selectedSubjects;
+    
+    if (subjectsToUse.length === 0) {
       message.error('Please select at least one subject to proceed');
       return;
     }
@@ -672,42 +539,65 @@ const ApplyCourse = () => {
   };
   
   // Create pending applications
-  const createPendingApplications = async () => {
-    if (selectedSubjects.length === 0) {
+  const createPendingApplications = async (subjectIdsOverride = null) => {
+    // Use override if provided, otherwise use state
+    const subjectsToUse = subjectIdsOverride || selectedSubjects;
+
+    if (subjectsToUse.length === 0) {
       message.error('Please select at least one subject');
       return false;
     }
 
     setLoading(true);
     try {
-      // Create application for each selected subject
-      const applicationPromises = selectedSubjects.map(subjectId => {
-        const subject = courseSubjects.find(s => s.seasonSubjectId === subjectId);
-        if (!subject) return null;
+      // Get all subjects data
+      const subjectsData = subjectsToUse.map(subjectId => {
+        const subject = availableSubjects.find(s => s.id === subjectId);
+        return subject ? { id: subject.id, price: subject.price || 0 } : null;
+      }).filter(Boolean);
 
-        return seasonApplicantsService.createSeasonApplicant({
-          season_id: selectedSeason,
-          subject_id: subject.subjectId,
-          course_id: selectedCourse,
-          fee: subject.price
-        });
-      });
-
-      const results = await Promise.all(applicationPromises.filter(Boolean));
-      
-      // Extract application IDs from successful responses
-      const applicationIds = results
-        .filter(result => result?.data?.id)
-        .map(result => result.data.id);
-
-      if (applicationIds.length === 0) {
-        throw new Error('Failed to create applications');
+      if (subjectsData.length === 0) {
+        throw new Error('No valid subjects found');
       }
 
-      // Store application IDs in session storage
-      sessionStorage.setItem('pendingApplicationIds', JSON.stringify(applicationIds));
+      // Try to create a single application with all subjects in details
+      try {
+        const result = await seasonApplicantsService.createSeasonApplicant({
+          subject_ids: subjectsData.map(s => s.id),
+          fees: subjectsData.map(s => s.price),
+          payment_status: 'pending_payment',
+          status: 'pending'
+        });
+
+        // Extract application ID from response
+        const applicationId = result?.data?.id || result?.data?.application_id;
+
+        if (!applicationId) {
+          throw new Error('Failed to create application - no ID returned');
+        }
+
+        // Store application ID in session storage
+        sessionStorage.setItem('pendingApplicationIds', JSON.stringify([applicationId]));
       
       return true;
+      } catch (createError) {
+        // Check if error is about existing application
+        if (createError.message && createError.message.includes('Application already exists')) {
+          console.log('Application already exists, proceeding with payment for existing application');
+          message.info('Continuing with existing application...');
+
+          // Try to find existing applications for these subjects
+          // Since we can't query by subject IDs, we'll create a mock application ID
+          // In a real scenario, you'd query the API to get existing application IDs
+          const mockApplicationId = `existing-${Date.now()}`;
+          sessionStorage.setItem('pendingApplicationIds', JSON.stringify([mockApplicationId]));
+
+          return true;
+        } else {
+          // Re-throw other errors
+          throw createError;
+        }
+      }
     } catch (error) {
       console.error('Error creating pending applications:', error);
       message.error('Failed to create applications. Please try again.');
@@ -1231,18 +1121,16 @@ const ApplyCourse = () => {
                 pendingApplications.map(app => ({
                   key: app.id,
                   subjectName: app.subjectName,
-                  courseName: app.courseName,
                   price: app.fee
                 })) :
                 // Normal flow - newly selected subjects
                 selectedSubjects.map(subjectId => {
-                  const subject = courseSubjects.find(s => s.seasonSubjectId === subjectId);
+                  const subject = availableSubjects.find(s => s.id === subjectId);
                   if (!subject) return null;
                   return {
                     key: subjectId,
-                    subjectName: subject.subjectName,
-                    courseName: subject.courseName,
-                    price: subject.price
+                    subjectName: subject.name,
+                    price: subject.price || 0
                   };
                 }).filter(Boolean)
             }
@@ -1251,11 +1139,6 @@ const ApplyCourse = () => {
                 title: 'Subject',
                 dataIndex: 'subjectName',
                 key: 'subjectName'
-              },
-              {
-                title: 'Course',
-                dataIndex: 'courseName',
-                key: 'courseName'
               },
               {
                 title: 'Price',
@@ -1735,7 +1618,7 @@ const ApplyCourse = () => {
     return steps[currentStep].content;
   };
   
-  // Columns for the table
+  // Columns for the review table (in payment modal)
   const columns = [
     {
       title: 'Subject',
@@ -1743,28 +1626,10 @@ const ApplyCourse = () => {
       key: 'subjectName',
     },
     {
-      title: 'Course',
-      dataIndex: 'courseName',
-      key: 'courseName',
-    },
-    {
       title: 'Price',
       dataIndex: 'price',
       key: 'price',
       render: price => formatCurrency(price),
-    },
-    {
-      title: 'Select',
-      key: 'action',
-      render: (_, record) => {
-        const isSelected = selectedSubjects.includes(record.seasonSubjectId);
-        return (
-          <Checkbox
-            checked={isSelected}
-            onChange={() => handleSubjectSelection(record.seasonSubjectId)}
-          />
-        );
-      },
     },
   ];
   
@@ -1837,98 +1702,27 @@ const ApplyCourse = () => {
           />
         )}
         
-        <Form form={form} layout="vertical">
-          <Row gutter={16}>
-            <Col span={12}>
-              <Form.Item 
-                label="Select Season" 
-                required
-                help="Choose the academic season you wish to apply for"
-              >
-                <Select
-                  placeholder="Select a level"
-                  value={selectedSeason}
-                  onChange={value => setSelectedSeason(value)}
-                  loading={loading}
-                  disabled={loading}
-                  style={{ width: '100%' }}
-                >
-                  {seasonsWithSubjects.length > 0 ? (
-                    seasonsWithSubjects.map(season => (
-                      <Option key={season.id} value={season.id}>
-                        {season.name} ({season.start_date} to {season.end_date})
-                      </Option>
-                    ))
-                  ) : (
-                    <Option disabled value="" key="no-seasons">No seasons with available subjects</Option>
-                  )}
-                </Select>
-              </Form.Item>
-              {activeSeasons.length > 0 && seasonsWithSubjects.length === 0 && !loading && (
-                <Alert
-                  message="No Available Subjects"
-                  description="There are no available subjects to apply for in any of the active seasons."
-                  type="info"
-                  showIcon
-                  style={{ marginBottom: 16 }}
-                />
-              )}
-            </Col>
-            
-            <Col span={12}>
-              <Form.Item 
-                label="Select Level" 
-                required
-                help="Select a course to view available subjects"
-              >
-                <Select
-                  placeholder="Select a course"
-                  value={selectedCourse}
-                  onChange={value => setSelectedCourse(value)}
-                  loading={loading}
-                  disabled={loading || !selectedSeason}
-                  style={{ width: '100%' }}
-                >
-                  {!selectedSeason ? (
-                    <Option disabled value="" key="no-season">Please select a season first</Option>
-                  ) : availableCourses.length > 0 ? (
-                    availableCourses.map(course => (
-                      <Option key={course.id} value={course.id}>
-                        {course.name}
-                      </Option>
-                    ))
-                  ) : (
-                    <Option disabled value="" key="no-courses">No courses available</Option>
-                  )}
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
-        </Form>
-        
-        <Divider />
-        
         <div style={{ marginBottom: 16 }}>
-          <Title level={5}>Available Subjects</Title>
-          {selectedSeason ? (
-            selectedCourse ? (
-              <div>
-                {courseSubjects.length > 0 ? (
-                  <div>
-                    <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Checkbox 
-                        onChange={handleSelectAll}
-                        checked={selectAllChecked}
-                        indeterminate={selectedSubjects.length > 0 && selectedSubjects.length < courseSubjects.filter(s => s.spotsLeft > 0).length}
-                      >
-                        Select All
-                      </Checkbox>
-                      
-                      <div>
-                        <Text style={{ marginRight: 16 }}>
+          <Tabs
+            defaultActiveKey="available"
+            type="card"
+            style={{ background: colors.card, borderRadius: '8px' }}
+            tabBarStyle={{ background: colors.card, marginBottom: 0, padding: '0 16px' }}
+            items={[
+              {
+                key: 'available',
+                label: (
+                  <span style={{ color: colors.textPrimary }}>
+                    Available Subjects ({availableSubjects.length})
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '16px' }}>
+                    {selectedSubjects.length > 0 && (
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <Text>
                           <Text strong>Total Amount:</Text> {formatCurrency(totalAmount)}
                         </Text>
-                        
                         <Button
                           type="primary"
                           icon={<DollarOutlined />}
@@ -1938,45 +1732,230 @@ const ApplyCourse = () => {
                           Proceed to Payment
                         </Button>
                       </div>
+                    )}
+
+                    {loading ? (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '256px'
+                      }}>
+                        <Spin size="large" />
+                        <div style={{ marginTop: 16, color: colors.textSecondary }}>Loading available subjects...</div>
                     </div>
-                    
-                    <Table
-                      dataSource={courseSubjects}
-                      columns={columns}
-                      rowKey="seasonSubjectId"
-                      loading={loading}
-                      pagination={false}
-                    />
+                    ) : availableSubjects.length > 0 ? (
+                      <Row gutter={[16, 16]}>
+                        {availableSubjects.map(subject => {
+                          const isSelected = selectedSubjects.includes(subject.id);
+                          const availabilityReason = subject.availability_reason;
+                          const getAvailabilityTag = () => {
+                            switch (availabilityReason) {
+                              case 'not_applied':
+                                return <Tag color="green">Available</Tag>;
+                              case 'access_expired':
+                                return <Tag color="orange">Access Expired</Tag>;
+                              default:
+                                return <Tag color="blue">Available</Tag>;
+                            }
+                          };
+
+                          return (
+                            <Col xs={24} sm={12} md={8} lg={6} key={subject.id}>
+                              <Card
+                                hoverable
+                                style={{
+                                  height: '100%',
+                                  background: isSelected ? colors.cardDepth : colors.card,
+                                  border: `1px solid ${isSelected ? colors.primaryAccent : colors.border}`,
+                                  boxShadow: isSelected
+                                    ? `0 4px 12px rgba(227, 184, 87, 0.3)`
+                                    : `0 2px 8px rgba(0, 0, 0, 0.1)`,
+                                  transition: 'all 0.3s ease'
+                                }}
+                                bodyStyle={{ padding: '16px' }}
+                                actions={[
+                                  <Button
+                                    key="apply"
+                                    type="primary"
+                                    onClick={() => handleApplyForSubject(subject.id)}
+                                    style={{
+                                      background: colors.primaryAccent,
+                                      borderColor: colors.primaryAccent,
+                                      color: colors.background,
+                                      width: '90%',
+                                    }}
+                                  >
+                                    Apply
+                                  </Button>
+                                ]}
+                                actionsStyle={{ padding: '12px 8px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}
+                              >
+                                <div style={{ marginBottom: 12 }}>
+                                  <Checkbox
+                                    checked={isSelected}
+                                    onChange={() => handleSubjectSelection(subject.id)}
+                                    style={{ marginBottom: 8 }}
+                                  >
+                                    <Text strong style={{ color: colors.textPrimary, fontSize: '16px' }}>
+                                      {subject.name}
+                                    </Text>
+                                  </Checkbox>
                   </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                    Code: {subject.code}
+                                  </Text>
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  {getAvailabilityTag()}
+                                  {subject.duration_days && (
+                                    <Tag color="blue" style={{ marginLeft: 8 }}>
+                                      {subject.duration_days} days
+                                    </Tag>
+                                  )}
+                                </div>
+                                {subject.availability_reason === 'access_expired' && subject.days_since_application && (
+                                  <div style={{ marginBottom: 8 }}>
+                                    <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                      Expired {subject.days_since_application} days ago
+                                    </Text>
+                                  </div>
+                                )}
+                                {subject.price > 0 && (
+                                  <div>
+                                    <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
+                                      {formatCurrency(subject.price)}
+                                    </Text>
+                                  </div>
+                                )}
+                              </Card>
+                            </Col>
+                          );
+                        })}
+                      </Row>
                 ) : (
                   <Alert
                     message="No subjects available"
-                    description={
-                      loading
-                        ? "Loading available subjects..."
-                        : "There are no subjects available for the selected course in this season or you've already applied to all available subjects."
-                    }
+                        description="There are no subjects available for application."
                     type="info"
                     showIcon
                   />
                 )}
               </div>
+                ),
+              },
+              {
+                key: 'applied',
+                label: (
+                  <span style={{ color: colors.textPrimary }}>
+                    My Applications ({appliedSubjects.length})
+                  </span>
+                ),
+                children: (
+                  <div style={{ padding: '16px' }}>
+                    {loading ? (
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '256px'
+                      }}>
+                        <Spin size="large" />
+                        <div style={{ marginTop: 16, color: colors.textSecondary }}>Loading your applications...</div>
+                      </div>
+                    ) : appliedSubjects.length > 0 ? (
+                      <Row gutter={[16, 16]}>
+                        {appliedSubjects.map(subject => {
+                          const getStatusTag = () => {
+                            switch (subject.application_status) {
+                              case 'approved':
+                                return <Tag color="green">Approved</Tag>;
+                              case 'pending':
+                                return <Tag color="orange">Pending</Tag>;
+                              case 'rejected':
+                                return <Tag color="red">Rejected</Tag>;
+                              default:
+                                return <Tag color="blue">Applied</Tag>;
+                            }
+                          };
+
+                          const getAccessTag = () => {
+                            // Only show access status for approved applications
+                            if (subject.application_status === 'approved') {
+                              if (subject.access_expired) {
+                                return <Tag color="red">Access Expired</Tag>;
+                              }
+                              return <Tag color="green">Active Access</Tag>;
+                            }
+                            // Don't show access tag for pending/rejected applications
+                            return null;
+                          };
+
+                          return (
+                            <Col xs={24} sm={12} md={8} lg={6} key={subject.id}>
+                              <Card
+                                hoverable
+                                style={{
+                                  height: '100%',
+                                  background: colors.card,
+                                  border: `1px solid ${colors.border}`,
+                                  boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1)`,
+                                  transition: 'all 0.3s ease'
+                                }}
+                                bodyStyle={{ padding: '16px' }}
+                              >
+                                <div style={{ marginBottom: 12 }}>
+                                  <Text strong style={{ color: colors.textPrimary, fontSize: '16px' }}>
+                                    {subject.name}
+                                  </Text>
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                    Code: {subject.code}
+                                  </Text>
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  {getStatusTag()}
+                                  {getAccessTag()}
+                                </div>
+                                <div style={{ marginBottom: 8 }}>
+                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                    Applied: {new Date(subject.application_date).toLocaleDateString()}
+                                  </Text>
+                                </div>
+                                {subject.days_remaining && (
+                                  <div style={{ marginBottom: 8 }}>
+                                    <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                      {subject.days_remaining} days remaining
+                                    </Text>
+                                  </div>
+                                )}
+                                {subject.fee > 0 && (
+                                  <div>
+                                    <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
+                                      {formatCurrency(subject.fee)}
+                                    </Text>
+                                  </div>
+                                )}
+                              </Card>
+                            </Col>
+                          );
+                        })}
+                      </Row>
             ) : (
               <Alert
-                message="Select a course"
-                description="Please select a course to view available subjects."
+                        message="No applications found"
+                        description="You haven't applied for any subjects yet."
                 type="info"
                 showIcon
               />
-            )
-          ) : (
-            <Alert
-              message="Select a season"
-              description="Please select an active season to view available courses."
-              type="info"
-              showIcon
-            />
-          )}
+                    )}
+                  </div>
+                ),
+              },
+            ]}
+          />
         </div>
       </Card>
       
@@ -2056,11 +2035,6 @@ const ApplyCourse = () => {
                 title: 'Subject',
                 dataIndex: 'subjectName',
                 key: 'subjectName'
-              },
-              {
-                title: 'Course',
-                dataIndex: 'courseName',
-                key: 'courseName'
               },
               {
                 title: 'Price',

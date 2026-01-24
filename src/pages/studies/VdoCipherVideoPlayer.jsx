@@ -187,7 +187,7 @@ const VdoCipherVideoPlayer = () => {
           borderRadius: 8,
           color: '#fff'
         }}>
-          <h3 style={{ color: '#fff', marginTop: 0 }}>🔒 dcrc.ac.tz</h3>
+          <h3 style={{ color: '#fff', marginTop: 0 }}>🔒 African Hub</h3>
          
         </div>
       </div>

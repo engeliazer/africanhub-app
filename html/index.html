@@ -7,13 +7,20 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary-color: #277186;
-            --secondary-color: #2D2D2D;
-            --accent-color: #9a653a;
-            --text-color: #2D2D2D;
-            --light-bg: #f8f9fa;
-            --border-color: #e5e7eb;
-            --white: #ffffff;
+            /* Dark Theme Colors */
+            --primary-color: #E3B857;
+            --secondary-color: #151515;
+            --accent-color: #E3B857;
+            --text-color: #F2F2F2;
+            --light-bg: #151515;
+            --border-color: #242424;
+            --white: #151515;
+            --background: #0C0C0C;
+            --card: #151515;
+            --card-depth: #1C1C1C;
+            --text-primary: #F2F2F2;
+            --text-secondary: #B8B8B8;
+            --text-muted: #7A7A7A;
         }
 
         * {
@@ -25,8 +32,8 @@
         body {
             font-family: 'Inter', sans-serif;
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: var(--white);
+            color: var(--text-primary);
+            background-color: var(--background);
         }
 
         .container {
@@ -36,10 +43,10 @@
         }
 
         header {
-            background: linear-gradient(135deg, rgba(39, 113, 134, 0.85), rgba(45, 45, 45, 0.85)), url('https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
+            background: linear-gradient(135deg, rgba(227, 184, 87, 0.85), rgba(12, 12, 12, 0.85)), url('https://images.unsplash.com/photo-1577896851231-70ef18881754?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
             background-size: cover;
             background-position: center;
-            color: var(--white);
+            color: var(--text-primary);
             padding: 4rem 0;
             text-align: center;
             position: relative;
@@ -48,19 +55,19 @@
         .header-button {
             display: inline-block;
             background-color: var(--accent-color);
-            color: var(--white);
+            color: var(--background);
             padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             text-decoration: none;
             font-weight: 600;
             font-size: 1rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             margin: 1.5rem 0;
         }
 
         .header-button:hover {
-            background-color: #8a5a2a;
+            background-color: #C9A44A;
             transform: translateY(-2px);
             box-shadow: 0 6px 8px rgba(0,0,0,0.15);
         }
@@ -76,7 +83,7 @@
         h1 {
             font-size: 3rem;
             margin-bottom: 1rem;
-            color: var(--white);
+            color: var(--text-primary);
         }
 
         .subtitle {
@@ -84,15 +91,16 @@
             opacity: 0.9;
             max-width: 800px;
             margin: 0 auto;
-            color: var(--white);
+            color: var(--text-primary);
         }
 
         .section {
             margin: 4rem 0;
             padding: 2rem;
-            background-color: var(--light-bg);
+            background-color: var(--card);
             border-radius: 1rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            color: var(--text-primary);
         }
 
         h2 {
@@ -122,12 +130,13 @@
         }
 
         .feature-card {
-            background: var(--white);
+            background: var(--card);
             padding: 2rem;
             border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             border-top: 3px solid var(--primary-color);
+            color: var(--text-primary);
         }
 
         .feature-card:hover {
@@ -136,7 +145,7 @@
         }
 
         .feature-card h3 {
-            color: var(--secondary-color);
+            color: var(--text-primary);
             margin-bottom: 1rem;
             display: flex;
             align-items: center;
@@ -168,15 +177,16 @@
         }
 
         .benefits {
-            background: var(--white);
+            background: var(--card);
             padding: 2rem;
             border-radius: 0.75rem;
             margin-top: 2rem;
             border-left: 4px solid var(--accent-color);
+            color: var(--text-primary);
         }
 
         .benefits h3 {
-            color: var(--secondary-color);
+            color: var(--text-primary);
             margin-bottom: 1rem;
         }
 
@@ -188,7 +198,7 @@
         .cta-button {
             display: inline-block;
             background-color: var(--accent-color);
-            color: var(--white);
+            color: var(--background);
             padding: 1rem 2rem;
             border-radius: 0.5rem;
             text-decoration: none;
@@ -198,7 +208,7 @@
         }
 
         .cta-button:hover {
-            background-color: #8a5a2a;
+            background-color: #C9A44A;
         }
 
         .highlight {
@@ -240,7 +250,7 @@
         }
 
         .loading-text {
-            color: var(--white);
+            color: var(--text-primary);
             font-size: 1.25rem;
             font-weight: 500;
         }
@@ -250,15 +260,15 @@
         }
 
         footer {
-            background-color: var(--secondary-color);
-            color: var(--white);
+            background-color: var(--card);
+            color: var(--text-primary);
             padding: 2rem 0;
             text-align: center;
             margin-top: 4rem;
         }
 
         .testimonial {
-            background: var(--white);
+            background: var(--card);
             padding-left: 4rem;
             padding-top: 2rem;
             padding-bottom: 2rem;
@@ -266,8 +276,9 @@
             
             border-radius: 0.75rem;
             margin: 2rem 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
             position: relative;
+            color: var(--text-primary);
         }
 
         .testimonial::before {
@@ -323,15 +334,15 @@
 
         .stat-label {
             font-size: 1rem;
-            color: var(--secondary-color);
+            color: var(--text-secondary);
         }
     </style>
 </head>
 <body>
     <header>
         <div class="container">
-            <h3>DCRC</h3>
-            <h1>Online CPA Review Classes</h1>
+            <h3>The African Hub</h3>
+            <h1>Building Accounting Skills for the Real World</h1>
             <p class="subtitle">Your Path to CPA Success: Interactive Learning, Expert Support, and Comprehensive Study Resources</p>
             <a href="https://app.ocpac.co.tz" class="header-button" id="header-button">Get Started</a>
         </div>

@@ -4,8 +4,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { menuConfig } from '../../config/menuConfig';
 import { selectPermissions } from '../../state/rbacSlice';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const SideMenu = () => {
+  const { colors } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const userPermissions = useSelector(selectPermissions);
@@ -79,8 +81,14 @@ const SideMenu = () => {
       defaultOpenKeys={selectedKeys.slice(0, -1)}
       items={items}
       className="h-full border-r-0"
+      style={{
+        background: colors.card,
+        color: colors.textPrimary,
+        fontSize: '14px',
+        lineHeight: '1.6',
+      }}
     />
   );
 };
 
-export default SideMenu; 
+export default SideMenu;

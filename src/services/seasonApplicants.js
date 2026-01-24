@@ -25,31 +25,66 @@ const seasonApplicantsService = {
 
   createSeasonApplicant: async (data) => {
     try {
+      // Get user_id from localStorage
+      const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
+      const userId = userInfo.id || userInfo.user_id;
+      
+      if (!userId) {
+        throw new Error('User ID not found. Please log in again.');
+      }
+      
       // If we're getting individual subject applications, convert to batch format
       if (data.subject_id) {
-        // Single subject application
-        const response = await axios.post('/api/season-applications', {
-          user_id: data.user_id,
-          season_id: data.season_id,
+        // Single subject application - no longer requires season_id
+        const payload = {
+          user_id: userId,
           subject_ids: [data.subject_id],
           payment_status: data.payment_status || 'pending_payment',
           status: data.status || 'pending',
-          // Only include these fields if they exist
-          ...(data.payment_method && { payment_method: data.payment_method }),
-          ...(data.mobile_number && { mobile_number: data.mobile_number }),
-          ...(data.transaction_id && { transaction_id: data.transaction_id }),
-          ...(data.payment_date && { payment_date: data.payment_date })
-        });
+          details: [
+            {
+              subject_id: data.subject_id,
+              fee: data.fee || 0
+            }
+          ]
+        };
+        
+        // Only include optional fields if they exist
+        if (data.payment_method) payload.payment_method = data.payment_method;
+        if (data.mobile_number) payload.mobile_number = data.mobile_number;
+        if (data.transaction_id) payload.transaction_id = data.transaction_id;
+        if (data.payment_date) payload.payment_date = data.payment_date;
+        
+        const response = await axios.post('/api/applications', payload);
         return response.data;
       } else if (Array.isArray(data.subject_ids)) {
-        // Already in batch format
-        const response = await axios.post('/api/season-applications', data);
+        // Batch format - create details array from subject_ids and fees
+        const details = data.subject_ids.map((subjectId, index) => ({
+          subject_id: subjectId,
+          fee: Array.isArray(data.fees) ? data.fees[index] : (data.fee || 0)
+        }));
+        
+        const payload = {
+          user_id: userId,
+          subject_ids: data.subject_ids,
+          payment_status: data.payment_status || 'pending_payment',
+          status: data.status || 'pending',
+          details: details
+        };
+        
+        // Only include optional fields if they exist
+        if (data.payment_method) payload.payment_method = data.payment_method;
+        if (data.mobile_number) payload.mobile_number = data.mobile_number;
+        if (data.transaction_id) payload.transaction_id = data.transaction_id;
+        if (data.payment_date) payload.payment_date = data.payment_date;
+        
+        const response = await axios.post('/api/applications', payload);
         return response.data;
       } else {
         throw new Error('Invalid application data: missing subject_id or subject_ids');
       }
     } catch (error) {
-      throw error.response?.data?.message || 'Error creating application';
+      throw error.response?.data?.message || error.message || 'Error creating application';
     }
   },
 

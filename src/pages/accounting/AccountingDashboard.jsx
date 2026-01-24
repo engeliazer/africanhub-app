@@ -464,7 +464,7 @@ const AccountingDashboard = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6 bg-background min-h-screen">
       <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
         <Title level={2} className="mb-4 md:mb-0 md:w-3/5">Accounting Dashboard</Title>
         <div className="md:w-2/5">

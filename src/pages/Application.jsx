@@ -20,6 +20,7 @@ import {
   Row,
   Col
 } from 'antd';
+import { useTheme } from '../contexts/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircleOutlined, 
@@ -51,6 +52,7 @@ const { TabPane } = Tabs;
 const { Option } = Select;
 
 const Application = () => {
+  const { colors } = useTheme();
   // States
   const [activeKey, setActiveKey] = useState('1');
   const [loading, setLoading] = useState(false);
@@ -385,12 +387,17 @@ const Application = () => {
               <>
                 {myApplications.length === 0 ? (
                   <Empty 
-                    description="You haven't applied for any courses yet" 
+                    description={<Text style={{ color: colors.textSecondary }}>You haven't applied for any courses yet</Text>}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                   >
                     <Button 
                       type="primary" 
                       onClick={() => setActiveKey('2')}
+                      style={{
+                        background: colors.primaryAccent,
+                        borderColor: colors.primaryAccent,
+                        color: colors.background
+                      }}
                     >
                       Apply for Courses
                     </Button>
@@ -440,7 +447,7 @@ const Application = () => {
                 
                 {activeSeasons.length === 0 ? (
                   <Empty 
-                    description="No active seasons are currently available for applications" 
+                    description={<Text style={{ color: colors.textSecondary }}>No active seasons are currently available for applications</Text>}
                     image={Empty.PRESENTED_IMAGE_SIMPLE}
                   />
                 ) : (

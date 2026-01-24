@@ -1,9 +1,12 @@
 import React from 'react';
-import { Layout, Menu } from 'antd';
+import { Layout, Menu, Button, Divider, Select } from 'antd';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { menuConfig } from '../../config/menuConfig';
 import { selectCurrentRole, selectPermissions } from '../../state/rbacSlice';
+import { UserSwitchOutlined } from '@ant-design/icons';
+import ThemeSwitcher from './ThemeSwitcher';
+import { useTheme } from '../../contexts/ThemeContext';
 import {
   DashboardOutlined,
   TeamOutlined,
@@ -27,19 +30,30 @@ import {
   AuditOutlined,
   SafetyCertificateOutlined,
   FileSearchOutlined,
-  ToolOutlined
+  ToolOutlined,
+  SwapOutlined
 } from '@ant-design/icons';
 
 const { Sider } = Layout;
 
-const Sidebar = ({ collapsed, selectedModule, isInDrawer = false }) => {
+const Sidebar = ({ 
+  collapsed, 
+  selectedModule, 
+  isInDrawer = false, 
+  onSwitchModule,
+  currentRole: propCurrentRole,
+  roles = [],
+  onRoleChange,
+  loading = false
+}) => {
+  const { colors } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const currentRole = useSelector(selectCurrentRole);
+  const reduxCurrentRole = useSelector(selectCurrentRole);
   const userPermissions = useSelector(selectPermissions);
-
-  // Add console logging to debug
-  console.log("Sidebar rendering with selectedModule:", selectedModule);
+  
+  // Use prop if provided, otherwise fall back to Redux
+  const currentRole = propCurrentRole || reduxCurrentRole;
 
   // Check if user has required permissions for a menu item
   const hasRequiredPermissions = (permissions, roles) => {
@@ -59,29 +73,35 @@ const Sidebar = ({ collapsed, selectedModule, isInDrawer = false }) => {
 
   // Filter menu items based on permissions and selected module
   const filterMenuItems = (items) => {
-    return items.filter(item => {
-      // More explicit check for module matching
-      if (item.module) {
-        console.log(`Checking item ${item.key} with module ${item.module} against selected ${selectedModule}`);
-        if (item.module !== selectedModule) {
-          return false;
-        }
+    const filtered = [];
+    
+    items.forEach(item => {
+      // Check for module matching - only show items for the selected module
+      if (item.module && item.module !== selectedModule) {
+        return; // Skip items from other modules
       }
 
       const hasPermission = hasRequiredPermissions(item.permissions, item.roles);
       
-      // If it's a parent item with children, check children permissions too
-      if (item.children) {
+      // If it's a parent item with children, flatten it - show only children
+      if (item.children && item.children.length > 0) {
         const filteredChildren = filterMenuItems(item.children);
-        // Show parent only if it has visible children
-        return hasPermission && filteredChildren.length > 0;
+        // Instead of showing the parent, add the children directly
+        if (hasPermission && filteredChildren.length > 0) {
+          filtered.push(...filteredChildren);
+        }
+      } else if (hasPermission) {
+        // If no children, add the item itself
+        filtered.push(item);
       }
-      
-      return hasPermission;
     });
+    
+    return filtered;
   };
 
   // Transform menu items to Ant Design format
+  // Note: Since filterMenuItems already flattens the structure (shows only children, not parents),
+  // we don't need to handle nested children here - all items passed to this function should be leaf nodes
   const transformMenuItem = (item) => {
     const menuItem = {
       key: item.key,
@@ -90,25 +110,14 @@ const Sidebar = ({ collapsed, selectedModule, isInDrawer = false }) => {
       onClick: item.path ? () => navigate(item.path) : undefined
     };
 
-    if (item.children) {
-      menuItem.children = filterMenuItems(item.children).map(transformMenuItem);
-    }
-
+    // Don't add children - the structure is already flattened in filterMenuItems
     return menuItem;
   };
 
   // Get filtered and transformed menu items
   const items = React.useMemo(() => {
-    console.log("Recalculating sidebar items for module:", selectedModule);
     return filterMenuItems(menuConfig).map(transformMenuItem);
   }, [selectedModule, currentRole, userPermissions, location.pathname]);
-  
-  // Add debug logging for filtered items
-  console.log("Filtered sidebar items:", items.map(item => ({
-    key: item.key,
-    label: item.label,
-    module: menuConfig.find(m => m.key === item.key)?.module || 'unknown'
-  })));
 
   // Find the selected keys based on current path
   const findSelectedKeys = (path) => {
@@ -140,12 +149,15 @@ const Sidebar = ({ collapsed, selectedModule, isInDrawer = false }) => {
     return selectedKeys.slice(0, -1);
   };
 
+  // Get module label
+  const moduleLabel = menuConfig.find(item => item.module === selectedModule)?.label || 'Module';
+
   return (
     <Sider
       trigger={null}
       collapsible
       collapsed={collapsed}
-      className="bg-white shadow-sm"
+      className="bg-card shadow-sm flex flex-col"
       width={250}
       collapsedWidth={100}
       style={{
@@ -155,21 +167,121 @@ const Sidebar = ({ collapsed, selectedModule, isInDrawer = false }) => {
         left: 0,
         top: 0,
         bottom: 0,
-        marginTop: isInDrawer ? 0 : '120px',
-        background: 'white'
+        marginTop: isInDrawer ? 0 : '80px',
+        background: colors.card,
+        display: 'flex',
+        flexDirection: 'column',
+        borderRight: `1px solid ${colors.border}`
       }}
     >
-      <Menu
-        mode="inline"
-        selectedKeys={selectedKeys}
-        defaultOpenKeys={getDefaultOpenKeys()}
-        items={items}
-        className="h-full border-r-0"
-        style={{
-          fontSize: '14px',
-          lineHeight: '1.8'
-        }}
-      />
+      {/* Switch Module Button */}
+      {onSwitchModule && (
+        <div style={{ padding: collapsed ? '12px 8px' : '12px 16px', borderBottom: `1px solid ${colors.border}`, background: colors.card }}>
+          <Button
+            type="text"
+            icon={<SwapOutlined />}
+            onClick={onSwitchModule}
+            block={!collapsed}
+            size={collapsed ? 'small' : 'middle'}
+            className="text-textPrimary hover:bg-cardDepth transition-colors"
+            style={{
+              width: collapsed ? '100%' : 'auto',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: collapsed ? 'center' : 'flex-start',
+              gap: '8px',
+              color: colors.textPrimary,
+              marginBottom: '8px'
+            }}
+          >
+            {!collapsed && 'Switch Module'}
+          </Button>
+        </div>
+      )}
+
+      {/* Role Selector */}
+      {onRoleChange && roles.length > 0 && (
+        <div style={{ padding: collapsed ? '12px 8px' : '12px 16px', borderBottom: `1px solid ${colors.border}`, background: colors.card }}>
+          {collapsed ? (
+            <Button
+              type="text"
+              icon={<UserSwitchOutlined />}
+              size="small"
+              className="text-textPrimary hover:bg-cardDepth transition-colors"
+              style={{
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: colors.textPrimary
+              }}
+              title={roles.find(r => r.value === currentRole)?.label || currentRole}
+            />
+          ) : (
+            <Select
+              value={currentRole}
+              onChange={onRoleChange}
+              options={roles}
+              loading={loading}
+              block
+              size="middle"
+              style={{
+                width: '100%'
+              }}
+              className="role-selector"
+              suffixIcon={<UserSwitchOutlined style={{ color: colors.textPrimary }} />}
+              popupClassName="custom-select-dropdown"
+              notFoundContent={roles.length === 0 ? <span style={{ color: colors.textMuted }}>No roles available</span> : null}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Theme Switcher */}
+      <div style={{ padding: collapsed ? '8px' : '8px 16px', borderBottom: `1px solid ${colors.border}`, background: colors.card }}>
+        <ThemeSwitcher collapsed={collapsed} />
+      </div>
+
+      {/* Menu Items */}
+      <div style={{ flex: 1, overflow: 'auto', background: colors.card }}>
+        <Menu
+          mode="inline"
+          selectedKeys={selectedKeys}
+          defaultOpenKeys={getDefaultOpenKeys()}
+          items={items}
+          className="h-full border-r-0"
+          style={{
+            background: colors.card,
+            color: colors.textPrimary,
+            fontSize: '14px',
+            lineHeight: '1.6',
+            borderRight: 'none'
+          }}
+          styles={{
+            root: {
+              background: colors.card,
+            },
+            item: {
+              background: 'transparent',
+              color: colors.textPrimary,
+            },
+            subMenu: {
+              background: 'transparent',
+            },
+            itemSelected: {
+              background: colors.border,
+              color: colors.textPrimary,
+            },
+            itemHover: {
+              background: colors.cardDepth,
+              color: colors.textPrimary,
+            },
+            subMenuTitle: {
+              color: colors.textPrimary,
+            },
+          }}
+        />
+      </div>
     </Sider>
   );
 };

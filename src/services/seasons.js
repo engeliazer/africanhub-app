@@ -78,6 +78,19 @@ const seasonsService = {
     } catch (error) {
       throw error.response?.data || error.message;
     }
+  },
+
+  // Get available subjects for a season
+  getSeasonAvailableSubjects: async (seasonId) => {
+    try {
+      const response = await axios.get(`${SEASONS_RESOURCE}/${seasonId}/available-subjects`);
+      return {
+        status: response.data.status,
+        data: response.data.data || {}
+      };
+    } catch (error) {
+      throw error.response?.data || error.message;
+    }
   }
 };
 

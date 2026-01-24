@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Typography, 
-  Table, 
-  Tag, 
-  Card, 
-  Divider, 
-  Button, 
-  Space, 
+import {
+  Typography,
+  Table,
+  Tag,
+  Card,
+  Divider,
+  Button,
+  Space,
   Tooltip,
   Empty,
   Spin,
   Tabs,
   Modal,
   Descriptions,
-  message
+  message,
+  Row,
+  Col
 } from 'antd';
 import { 
   CheckCircleOutlined, 
@@ -26,17 +28,17 @@ import {
   PhoneOutlined,
   LoginOutlined,
   QuestionCircleOutlined,
-  CloseCircleOutlined
+  CloseCircleOutlined,
+  InfoCircleOutlined
 } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../../contexts/ThemeContext';
 
 // Import services 
 import seasonApplicantsService from '../../services/seasonApplicants';
 import subjectsService from '../../services/subjects';
-import coursesService from '../../services/courses';
 import { getTokenLocal } from '../../services/utils/authorization';
 import { AUTH_ERROR_EVENT } from '../../services/axios';
-import seasonsService from '../../services/seasons';
 import Chat from '../../components/Chat';
 
 const { Title, Paragraph, Text } = Typography;
@@ -51,6 +53,7 @@ const formatCurrency = (amount) => {
 };
 
 const MyApplications = () => {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(true);
   const [myApplications, setMyApplications] = useState([]);
   const [completedApplications, setCompletedApplications] = useState([]);
@@ -58,7 +61,6 @@ const MyApplications = () => {
   const [activeTab, setActiveTab] = useState('current');
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState(null);
-  const [courses, setCourses] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -123,55 +125,18 @@ const MyApplications = () => {
         return;
       }
       
-      console.log('Fetching courses...');
-      // Fetch courses
-      const coursesData = await coursesService.getCourses();
-      console.log('Courses data:', coursesData);
-      setCourses(coursesData);
-      
-      console.log('Fetching seasons...');
-      // Fetch seasons
-      const seasonsResponse = await seasonsService.getSeasons();
-      console.log('Seasons response:', seasonsResponse);
-      
-      if (seasonsResponse.status !== 'success') {
-        throw new Error('Failed to fetch seasons');
-      }
-      
-      const seasonsData = seasonsResponse.data || [];
-      console.log('Seasons data:', seasonsData);
-      
-      // Create a mapping of season IDs to their names and dates
-      const seasonMap = {};
-      seasonsData.forEach(season => {
-        console.log('Processing season:', season);
-        if (season.id) {
-          seasonMap[season.id] = {
-            name: season.name || 'Unknown Season',
-            startDate: season.start_date,
-            endDate: season.end_date,
-            code: season.code,
-            description: season.description,
-            isActive: season.is_active
-          };
-        } else {
-          console.log('Season missing id:', season);
-        }
-      });
-      console.log('Season mapping:', seasonMap);
-      
       console.log('Fetching subjects...');
       // First, let's fetch all subjects to have their relationship data
       const subjectsResponse = await subjectsService.getSubjects(1, 100);
       console.log('Subjects response:', subjectsResponse);
-      
+
       // Extract subjects data from the response, handling different possible structures
       let subjectsData = [];
       if (subjectsResponse.data) {
         // If data is an array, use it directly
         if (Array.isArray(subjectsResponse.data)) {
           subjectsData = subjectsResponse.data;
-        } 
+        }
         // If data is an object with a subjects property that's an array
         else if (subjectsResponse.data.subjects && Array.isArray(subjectsResponse.data.subjects)) {
           subjectsData = subjectsResponse.data.subjects;
@@ -181,28 +146,9 @@ const MyApplications = () => {
           subjectsData = subjectsResponse.data.data;
         }
       }
-      
+
       console.log('Subjects data:', subjectsData);
-      
-      // Create a mapping of subject IDs to their course IDs and names
-      const subjectToCourseMap = {};
-      subjectsData.forEach(subject => {
-        console.log('Processing subject:', subject);
-        if (subject.id && subject.course_id) {
-          console.log('Looking for course with ID:', subject.course_id);
-          console.log('Available courses:', coursesData);
-          const course = coursesData.find(c => c.id === subject.course_id);
-          console.log('Found course:', course);
-          subjectToCourseMap[subject.id] = {
-            courseId: subject.course_id,
-            courseName: course?.name || 'Unknown Course'
-          };
-        } else {
-          console.log('Subject missing id or course_id:', subject);
-        }
-      });
-      console.log('Subject to course mapping:', subjectToCourseMap);
-      
+
       console.log('Fetching applications...');
       // Fetch applications for the current authenticated user
       const response = await seasonApplicantsService.getSeasonApplicants();
@@ -249,19 +195,6 @@ const MyApplications = () => {
               const subject = subjectsData.find(s => s.id === detail.subject_id);
               console.log('Found subject:', subject);
               
-              const courseInfo = subjectToCourseMap[detail.subject_id] || { 
-                courseId: null, 
-                courseName: 'Unknown Course' 
-              };
-              console.log('Course info:', courseInfo);
-              
-              const seasonInfo = seasonMap[detail.season_id] || {
-                name: 'Unknown Season',
-                startDate: 'N/A',
-                endDate: 'N/A'
-              };
-              console.log('Season info:', seasonInfo);
-              
               allApplications.push({
                 id: `${app.id}_${detail.id}`, // Create a unique ID
                 applicationId: app.id,
@@ -272,9 +205,8 @@ const MyApplications = () => {
                 applicationDate: app.created_at,
                 paymentStatus: app.payment_status,
                 subjectName: subject?.name || 'Unknown Subject',
-                courseName: courseInfo.courseName,
-                seasonName: seasonInfo.name,
-                seasonDates: `${seasonInfo.startDate || 'N/A'} to ${seasonInfo.endDate || 'N/A'}`,
+                seasonName: 'N/A', // No seasons used
+                seasonDates: 'N/A', // No seasons used
                 price: detail.fee || 0,
                 transactionId: app.transaction_id || 'Not Available',
                 paymentMethod: app.payment_method || 'Not Available',
@@ -289,17 +221,6 @@ const MyApplications = () => {
             app.subjects.forEach(subject => {
               console.log('Processing subject:', subject);
               
-              const courseInfo = subjectToCourseMap[subject.id] || { 
-                courseId: null, 
-                courseName: 'Unknown Course' 
-              };
-              
-              const seasonInfo = seasonMap[app.season_id] || {
-                name: 'Unknown Season',
-                startDate: 'N/A',
-                endDate: 'N/A'
-              };
-              
               allApplications.push({
                 id: `${app.id}_${subject.id}`,
                 applicationId: app.id,
@@ -310,9 +231,8 @@ const MyApplications = () => {
                 applicationDate: app.created_at,
                 paymentStatus: app.payment_status,
                 subjectName: subject.name || 'Unknown Subject',
-                courseName: courseInfo.courseName,
-                seasonName: seasonInfo.name,
-                seasonDates: `${seasonInfo.startDate || 'N/A'} to ${seasonInfo.endDate || 'N/A'}`,
+                seasonName: 'N/A', // No seasons used
+                seasonDates: 'N/A', // No seasons used
                 price: subject.fee || 0,
                 transactionId: app.transaction_id || 'Not Available',
                 paymentMethod: app.payment_method || 'Not Available',
@@ -500,15 +420,18 @@ const MyApplications = () => {
   // Application history columns
   const applicationColumns = [
     {
-      title: 'Course',
-      dataIndex: 'courseName',
-      key: 'courseName',
+      title: 'Application',
+      dataIndex: 'subjectName',
+      key: 'subjectName',
       render: (text, record) => (
         <div>
-          <div>{text}</div>
-          <div style={{ fontSize: '12px', color: '#666' }}>
+          <div>
+            <BookOutlined style={{ marginRight: 8 }} />
+            {text}
+          </div>
+          <div style={{ fontSize: '12px', color: colors.textSecondary }}>
             <CalendarOutlined style={{ marginRight: 4 }} />
-            {record.seasonName}
+            Applied: {new Date(record.applicationDate).toLocaleDateString()}
           </div>
         </div>
       )
@@ -523,7 +446,7 @@ const MyApplications = () => {
             <BookOutlined style={{ marginRight: 8 }} />
             {text}
           </div>
-          <div style={{ fontSize: '12px', color: '#666' }}>
+          <div style={{ fontSize: '12px', color: colors.textSecondary }}>
             <DollarOutlined style={{ marginRight: 4 }} />
             {formatCurrency(record.price)}
           </div>
@@ -549,7 +472,7 @@ const MyApplications = () => {
               {status}
             </Tag>
           </div>
-          <div style={{ fontSize: '12px', color: '#666', marginTop: 4 }}>
+          <div style={{ fontSize: '12px', color: colors.textSecondary, marginTop: 4 }}>
             {record.paymentStatus === 'pending_payment' ? (
               <Tag color="warning" style={{ fontSize: '12px' }}>
                 <CreditCardOutlined style={{ marginRight: 4 }} />
@@ -620,193 +543,183 @@ const MyApplications = () => {
   // Modal content
   const renderApplicationDetails = () => {
     if (!selectedApplication) return null;
-    
+
     return (
-      <div>
-        <Descriptions title="Application Summary" bordered column={2}>
-          <Descriptions.Item label="Application ID">
-            <Text strong>{selectedApplication.applicationId}</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Actions">
+      <div style={{ padding: '16px 0' }}>
+        {/* Header Section */}
+        <div style={{ marginBottom: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+            <div>
+              <Text strong style={{ fontSize: '18px', color: colors.textPrimary }}>
+                {selectedApplication.subjectName}
+              </Text>
+              <div style={{ marginTop: '4px' }}>
+                <Text type="secondary" style={{ fontSize: '14px' }}>
+                  Application #{selectedApplication.applicationId}
+                </Text>
+              </div>
+            </div>
             <Space>
               {selectedApplication.status === 'approved' && selectedApplication.paymentStatus === 'paid' ? (
-                <Tooltip title="Access study materials for this subject">
-                  <Button 
-                    type="primary" 
-                    icon={<BookOutlined />}
-                    onClick={() => handleStudyMaterials(selectedApplication.subjectId)}
-                    style={{ padding: '0 15px' }}
-                  >
-                    Study
-                  </Button>
-                </Tooltip>
-              ) : (
-                <Tooltip title={selectedApplication.paymentStatus !== 'paid' ? 
-                  "Complete payment to access study materials" : 
-                  selectedApplication.status !== 'approved' ?
-                  "Only approved applications can access study materials" :
-                  "This application does not have study materials available"}>
-                  <Button 
-                    disabled
-                    icon={<BookOutlined />}
-                    style={{ padding: '0 15px' }}
-                  >
-                    Study
-                  </Button>
-                </Tooltip>
-              )}
+                <Button
+                  type="primary"
+                  icon={<BookOutlined />}
+                  onClick={() => handleStudyMaterials(selectedApplication.subjectId)}
+                >
+                  Study
+                </Button>
+              ) : null}
               {selectedApplication.status === 'pending' && (
-                <Tooltip title="Cancel this application">
-                  <Button 
-                    danger
-                    icon={<CloseCircleOutlined />}
-                    onClick={() => handleCancelApplication(selectedApplication.applicationId, selectedApplication.subjectName)}
-                    style={{ padding: '0 15px' }}
-                  >
-                    Cancel Application
-                  </Button>
-                </Tooltip>
+                <Button
+                  danger
+                  icon={<CloseCircleOutlined />}
+                  onClick={() => handleCancelApplication(selectedApplication.applicationId, selectedApplication.subjectName)}
+                >
+                  Cancel
+                </Button>
               )}
             </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="Status" span={2}>
-            <Space size="middle">
-              <Tag className={`${selectedApplication.status === 'approved' ? 'bg-brandGreen text-brandWhite' : 'bg-brandYellow text-brandWhite'}`} style={{ padding: '4px 8px', fontSize: '14px' }}>
-                {selectedApplication.status}
-              </Tag>
-              {selectedApplication.paymentStatus === 'pending_payment' ? (
-                <Tag color="warning" style={{ padding: '4px 8px', fontSize: '14px' }}>Payment Required</Tag>
-              ) : selectedApplication.paymentStatus === 'paid' ? (
-                <Tag color="success" style={{ padding: '4px 8px', fontSize: '14px' }}>Paid</Tag>
-              ) : (
-                <Tag color="default" style={{ padding: '4px 8px', fontSize: '14px' }}>{selectedApplication.paymentStatus || 'N/A'}</Tag>
-              )}
-            </Space>
-          </Descriptions.Item>
-          <Descriptions.Item label="Application Date">
-            {formatDate(selectedApplication.applicationDate)}
-          </Descriptions.Item>
-          {selectedApplication.paymentDate && selectedApplication.paymentStatus === 'paid' && (
-            <Descriptions.Item label="Payment Date">
-              {formatDate(selectedApplication.paymentDate)}
-            </Descriptions.Item>
-          )}
-        </Descriptions>
-        
-        <Divider />
-        
-        <Descriptions title="Course Information" bordered column={2}>
-          <Descriptions.Item label="Season" span={2}>
-            <Text strong>{selectedApplication.seasonName}</Text>
-            <div>
-              <Text type="secondary">{selectedApplication.seasonDates}</Text>
-            </div>
-          </Descriptions.Item>
-          <Descriptions.Item label="Course">
-            {selectedApplication.courseName}
-          </Descriptions.Item>
-          <Descriptions.Item label="Subject">
-            {selectedApplication.subjectName}
-          </Descriptions.Item>
-          <Descriptions.Item label="Price">
-            <Text strong style={{ color: '#1890ff' }}>{formatCurrency(selectedApplication.price)}</Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Subject Status">
-            <Tag className={`${selectedApplication.subjectStatus === 'approved' ? 'bg-brandGreen text-brandWhite' : 'bg-brandYellow text-brandWhite'}`}>
-              {selectedApplication.subjectStatus}
+          </div>
+
+          {/* Status and Payment */}
+          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '16px' }}>
+            <Tag
+              className={`${selectedApplication.status === 'approved' ? 'bg-brandGreen text-brandWhite' : 'bg-brandYellow text-brandWhite'}`}
+              style={{ padding: '4px 12px', fontSize: '14px' }}
+            >
+              {selectedApplication.status}
             </Tag>
-          </Descriptions.Item>
-        </Descriptions>
-        
-        <Divider />
-        
-        <Descriptions title="Applicant Information" bordered column={2}>
-          <Descriptions.Item label="Name" span={2}>
-            <Text strong>
-              {selectedApplication.userDetails?.first_name || ''} {selectedApplication.userDetails?.last_name || ''}
-            </Text>
-          </Descriptions.Item>
-          <Descriptions.Item label="Email">
-            {selectedApplication.userDetails?.email || 'N/A'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Phone">
-            {selectedApplication.userDetails?.phone || selectedApplication.mobileNumber || 'N/A'}
-          </Descriptions.Item>
-        </Descriptions>
-        
-        <Divider />
-        
-        <Descriptions title="Payment Information" bordered column={2}>
-          <Descriptions.Item label="Payment Status" span={2}>
             {selectedApplication.paymentStatus === 'pending_payment' ? (
-              <>
-                <Tag color="warning" style={{ padding: '4px 8px', fontSize: '14px' }}>Payment Required</Tag>
-                <div style={{ marginTop: 12 }}>
-                  <Text type="secondary">
-                    This application requires payment to proceed. Please complete the payment process to finalize your application.
-                  </Text>
-                  <div style={{ marginTop: 16 }}>
-                    <Button 
-                      type="primary" 
-                      onClick={() => handleMakePayment(selectedApplication.applicationId)}
-                      size="middle"
-                      style={{ paddingLeft: 20, paddingRight: 20 }}
-                    >
-                      Make Payment
-                    </Button>
+              <Tag color="warning" style={{ padding: '4px 12px', fontSize: '14px' }}>Payment Required</Tag>
+            ) : selectedApplication.paymentStatus === 'paid' ? (
+              <Tag color="success" style={{ padding: '4px 12px', fontSize: '14px' }}>Paid</Tag>
+            ) : (
+              <Tag color="default" style={{ padding: '4px 12px', fontSize: '14px' }}>{selectedApplication.paymentStatus || 'N/A'}</Tag>
+            )}
+          </div>
+        </div>
+
+        {/* Details Grid */}
+        <Row gutter={[24, 16]}>
+          <Col span={12}>
+            <div style={{ padding: '16px', background: colors.card, borderRadius: '8px', border: `1px solid ${colors.border}` }}>
+              <Text strong style={{ color: colors.textPrimary, marginBottom: '8px', display: 'block' }}>
+                Application Details
+              </Text>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>Applied On</Text>
+                  <div><Text strong>{formatDate(selectedApplication.applicationDate)}</Text></div>
+                </div>
+                {selectedApplication.paymentDate && selectedApplication.paymentStatus === 'paid' && (
+                  <div>
+                    <Text type="secondary" style={{ fontSize: '12px' }}>Paid On</Text>
+                    <div><Text strong>{formatDate(selectedApplication.paymentDate)}</Text></div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </Col>
+
+          <Col span={12}>
+            <div style={{ padding: '16px', background: colors.card, borderRadius: '8px', border: `1px solid ${colors.border}` }}>
+              <Text strong style={{ color: colors.textPrimary, marginBottom: '8px', display: 'block' }}>
+                Course Details
+              </Text>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>Price</Text>
+                  <div><Text strong style={{ color: colors.primaryAccent, fontSize: '16px' }}>{formatCurrency(selectedApplication.price)}</Text></div>
+                </div>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>Subject Status</Text>
+                  <div>
+                    <Tag className={`${selectedApplication.subjectStatus === 'approved' ? 'bg-brandGreen text-brandWhite' : 'bg-brandYellow text-brandWhite'}`}>
+                      {selectedApplication.subjectStatus}
+                    </Tag>
                   </div>
                 </div>
-              </>
-            ) : selectedApplication.paymentStatus === 'paid' ? (
-              <>
-                <Tag color="success" style={{ padding: '4px 8px', fontSize: '14px' }}>Paid</Tag>
-                <div style={{ marginTop: 8 }}>
-                  <Text type="secondary">
-                    Payment has been successfully processed for this application.
-                  </Text>
-                </div>
-              </>
-            ) : (
-              <Tag color="default">{selectedApplication.paymentStatus || 'N/A'}</Tag>
-            )}
-          </Descriptions.Item>
-          {selectedApplication.transactionId && selectedApplication.transactionId !== 'Not Available' && (
-            <Descriptions.Item label="Transaction ID" span={2}>
-              <Text copyable>{selectedApplication.transactionId}</Text>
-            </Descriptions.Item>
-          )}
-          {selectedApplication.paymentMethod && selectedApplication.paymentMethod !== 'Not Available' && (
-            <Descriptions.Item label="Payment Method">
-              {getPaymentMethod(selectedApplication.paymentMethod)}
-            </Descriptions.Item>
-          )}
-          {selectedApplication.paymentStatus === 'paid' && (
-            <Descriptions.Item label="Amount Paid">
-              <Text strong style={{ color: '#52c41a' }}>{formatCurrency(selectedApplication.price)}</Text>
-            </Descriptions.Item>
-          )}
-        </Descriptions>
-        
-        {(selectedApplication.status === 'completed' || 
-         selectedApplication.grade && selectedApplication.grade !== 'N/A' || 
+              </div>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Payment Section - only show if payment is required */}
+        {selectedApplication.paymentStatus === 'pending_payment' && (
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: colors.card,
+            borderRadius: '8px',
+            border: `2px solid ${colors.primaryAccent}`,
+            textAlign: 'center'
+          }}>
+            <Text strong style={{ color: colors.textPrimary, marginBottom: '8px', display: 'block' }}>
+              Payment Required
+            </Text>
+            <Text type="secondary" style={{ marginBottom: '16px', display: 'block' }}>
+              Complete your payment to finalize this application and access study materials.
+            </Text>
+            <Button
+              type="primary"
+              size="large"
+              onClick={() => handleMakePayment(selectedApplication.applicationId)}
+              style={{ background: colors.primaryAccent, borderColor: colors.primaryAccent }}
+            >
+              Make Payment
+            </Button>
+          </div>
+        )}
+
+        {selectedApplication.paymentStatus === 'paid' && (
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: 'rgba(82, 196, 26, 0.1)',
+            borderRadius: '8px',
+            border: '1px solid rgba(82, 196, 26, 0.3)',
+            textAlign: 'center'
+          }}>
+            <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '24px', marginBottom: '8px' }} />
+            <Text strong style={{ color: '#52c41a' }}>
+              Payment completed successfully
+            </Text>
+          </div>
+        )}
+
+        {/* Academic Information - only show if completed or has grade/certificate */}
+        {(selectedApplication.status === 'completed' ||
+         (selectedApplication.grade && selectedApplication.grade !== 'N/A') ||
          selectedApplication.certificate_url) && (
-          <>
-            <Divider />
-            <Descriptions title="Academic Information" bordered>
+          <div style={{
+            marginTop: '24px',
+            padding: '16px',
+            background: colors.card,
+            borderRadius: '8px',
+            border: `1px solid ${colors.border}`
+          }}>
+            <Text strong style={{ color: colors.textPrimary, marginBottom: '12px', display: 'block' }}>
+              Academic Information
+            </Text>
+            <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
               {selectedApplication.grade && selectedApplication.grade !== 'N/A' && (
-                <Descriptions.Item label="Grade">
-                  <Text strong style={{ fontSize: '16px' }}>{selectedApplication.grade}</Text>
-                </Descriptions.Item>
+                <div>
+                  <Text type="secondary" style={{ fontSize: '12px' }}>Grade</Text>
+                  <div><Text strong style={{ fontSize: '16px' }}>{selectedApplication.grade}</Text></div>
+                </div>
               )}
               {selectedApplication.certificate_url && (
-                <Descriptions.Item label="Certificate">
-                  <Button type="primary" size="middle" href={selectedApplication.certificate_url} target="_blank" icon={<FileTextOutlined />}>
-                    Download Certificate
-                  </Button>
-                </Descriptions.Item>
+                <Button
+                  type="primary"
+                  icon={<FileTextOutlined />}
+                  href={selectedApplication.certificate_url}
+                  target="_blank"
+                >
+                  Download Certificate
+                </Button>
               )}
-            </Descriptions>
-          </>
+            </div>
+          </div>
         )}
       </div>
     );
@@ -858,21 +771,34 @@ const MyApplications = () => {
       ) : (
         <>
           {myApplications.length === 0 ? (
-            <Card>
+            <Card
+              style={{
+                boxShadow: `0 4px 12px rgba(46, 38, 18, 0.25)`
+              }}
+            >
               <Empty 
-                description="You haven't applied for any courses yet" 
+                description={<Text style={{ color: colors.textSecondary }}>You haven't applied for any courses yet</Text>}
                 image={Empty.PRESENTED_IMAGE_SIMPLE}
               >
                 <Button 
                   type="primary" 
                   onClick={() => navigate('/applications/apply')}
+                  style={{
+                    background: colors.primaryAccent,
+                    borderColor: colors.primaryAccent,
+                    color: colors.background
+                  }}
                 >
                   Apply for Courses
                 </Button>
               </Empty>
             </Card>
           ) : (
-            <Card>
+            <Card
+              style={{
+                boxShadow: `0 4px 12px rgba(227, 184, 87, 0.25)`
+              }}
+            >
               <Tabs 
                 activeKey={activeTab} 
                 onChange={setActiveTab}
@@ -888,8 +814,18 @@ const MyApplications = () => {
                   } 
                   key="current"
                 >
-                  <div style={{ marginBottom: 16, backgroundColor: '#e6f7ff', padding: 12, borderRadius: 4 }}>
-                    <Text type="secondary">
+                  <div style={{
+                    background: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px'
+                  }}>
+                    <InfoCircleOutlined style={{ color: colors.primaryAccent, marginTop: '2px', flexShrink: 0, fontSize: '18px' }} />
+                    <Text style={{ color: colors.textPrimary }}>
                       Showing applications with status "approved" or "pending".
                     </Text>
                   </div>
@@ -909,17 +845,35 @@ const MyApplications = () => {
                   } 
                   key="completed"
                 >
-                  <div style={{ marginBottom: 16, backgroundColor: '#f6ffed', padding: 12, borderRadius: 4 }}>
-                    <Text type="secondary">
-                      Showing only applications with status "completed".
-                    </Text>
-                    {completedApplications.length === 0 && (
-                      <div style={{ marginTop: 12, padding: 8, backgroundColor: '#fff', borderRadius: 4, border: '1px dashed #d9d9d9' }}>
-                        <Text type="secondary">
-                          No completed applications found. Applications appear here when their status is set to "completed".
-                        </Text>
-                      </div>
-                    )}
+                  <div style={{
+                    background: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px'
+                  }}>
+                    <CheckCircleOutlined style={{ color: colors.primaryAccent, marginTop: '2px', flexShrink: 0, fontSize: '18px' }} />
+                    <div style={{ flex: 1 }}>
+                      <Text style={{ color: colors.textPrimary }}>
+                        Showing only applications with status "completed".
+                      </Text>
+                      {completedApplications.length === 0 && (
+                        <div style={{
+                          marginTop: '12px',
+                          padding: '8px',
+                          background: colors.background,
+                          border: `1px dashed ${colors.border}`,
+                          borderRadius: '8px'
+                        }}>
+                          <Text style={{ color: colors.textSecondary }}>
+                            No completed applications found. Applications appear here when their status is set to "completed".
+                          </Text>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   <Table 
                     columns={applicationColumns} 
@@ -937,8 +891,18 @@ const MyApplications = () => {
                   } 
                   key="all"
                 >
-                  <div style={{ marginBottom: 16, backgroundColor: '#f5f5f5', padding: 12, borderRadius: 4 }}>
-                    <Text type="secondary">
+                  <div style={{
+                    background: colors.card,
+                    border: `1px solid ${colors.border}`,
+                    borderRadius: '8px',
+                    padding: '12px',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '12px'
+                  }}>
+                    <InfoCircleOutlined style={{ color: colors.primaryAccent, marginTop: '2px', flexShrink: 0, fontSize: '18px' }} />
+                    <Text style={{ color: colors.textPrimary }}>
                       Showing all applications regardless of status.
                     </Text>
                   </div>

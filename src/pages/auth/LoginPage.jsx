@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Input, Button, Card, message, Typography, Alert, Divider, Modal } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { UserOutlined, LockOutlined, MailOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons';
 import { useNavigate, useLocation, useSearchParams, Link } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import authService from '../../services/auth';
 import { Logo } from '../../library/atoms';
 import { setAssignedRoles, setCurrentRole } from '../../state/rbacSlice';
 import { getTokenLocal, saveTokenLocal, removeTokenLocal } from '../../services/utils/authorization';
+import { useTheme } from '../../contexts/ThemeContext';
+import ThemeSwitcher from '../../library/components/ThemeSwitcher';
 
 const { Title, Text } = Typography;
 
 const LoginPage = () => {
+  const { colors, theme, toggleTheme } = useTheme();
   const [form] = Form.useForm();
   const [resetForm] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -139,6 +142,7 @@ const LoginPage = () => {
         const returnUrl = searchParams.get('returnUrl');
         
         // Navigate to the return URL, intended page, or profile
+        // The module selection modal will be shown in SecondaryLayout if needed
         const redirectTo = returnUrl || location.state?.from?.pathname || '/user/profile';
         navigate(redirectTo, { replace: true });
       } else {
@@ -189,19 +193,135 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="max-w-md w-full space-y-8 -mt-12">
-        <div className="text-center mb-8 -mt-2 bg-brandGray/20 px-2 text-white p-2 rounded-lg -ml-2 -mr-2">
-        <div className="flex justify-center mb-10">
+    <div 
+      className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8"
+      style={{
+        background: `linear-gradient(135deg, ${colors.background} 0%, ${colors.card} 50%, ${colors.background} 100%)`,
+        position: 'relative',
+      }}
+    >
+      {/* Theme Switcher - Top Right Corner */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '20px',
+          right: '20px',
+          zIndex: 10,
+        }}
+      >
+        <Button
+          type="text"
+          icon={theme === 'dark' ? <SunOutlined /> : <MoonOutlined />}
+          onClick={toggleTheme}
+          style={{
+            color: colors.textPrimary,
+            background: colors.card,
+            border: `1px solid ${colors.border}`,
+            borderRadius: '8px',
+            width: '44px',
+            height: '44px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: `0 2px 8px rgba(0, 0, 0, 0.15)`,
+            transition: 'all 0.3s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = colors.cardDepth;
+            e.currentTarget.style.color = colors.primaryAccent;
+            e.currentTarget.style.borderColor = colors.primaryAccent;
+            e.currentTarget.style.boxShadow = `0 4px 12px rgba(227, 184, 87, 0.3)`;
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = colors.card;
+            e.currentTarget.style.color = colors.textPrimary;
+            e.currentTarget.style.borderColor = colors.border;
+            e.currentTarget.style.boxShadow = `0 2px 8px rgba(0, 0, 0, 0.15)`;
+          }}
+        />
+      </div>
+
+      {/* Decorative background elements */}
+      <div 
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `radial-gradient(circle at 20% 50%, rgba(227, 184, 87, 0.1) 0%, transparent 50%),
+                       radial-gradient(circle at 80% 80%, rgba(227, 184, 87, 0.08) 0%, transparent 50%)`,
+          pointerEvents: 'none',
+        }}
+      />
+      
+      <Card 
+        className="max-w-md w-full"
+        style={{
+          background: `linear-gradient(135deg, ${colors.card} 0%, ${colors.cardDepth} 100%)`,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '20px',
+          boxShadow: `0 20px 60px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(227, 184, 87, 0.15)`,
+          position: 'relative',
+          zIndex: 1,
+        }}
+        bodyStyle={{
+          padding: '28px 24px',
+        }}
+      >
+        {/* Header Section */}
+        <div 
+          className="text-center mb-6"
+          style={{
+            paddingBottom: '16px',
+            borderBottom: `1px solid ${colors.border}`,
+          }}
+        >
+          <div className="flex justify-center mb-3">
+            <div
+              style={{
+                padding: '10px',
+                background: `linear-gradient(135deg, ${colors.cardDepth} 0%, ${colors.card} 100%)`,
+                borderRadius: '12px',
+                boxShadow: `0 4px 12px rgba(227, 184, 87, 0.2)`,
+                border: `1px solid ${colors.border}`,
+              }}
+            >
             <Logo />
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-primary mb-2">
-            Online CPA Review Classes
-          </h1>
-          <Divider className='mt-1 mb-0'/>
-          <Title level={5}>Sign in to your account</Title>
+          <Title 
+            level={3} 
+            style={{ 
+              color: colors.textPrimary, 
+              marginBottom: '4px',
+              fontWeight: 700,
+              letterSpacing: '-0.5px',
+              fontSize: '20px',
+            }}
+          >
+            THE AFRICAN HUB
+          </Title>
+          <Text 
+            style={{ 
+              color: colors.primaryAccent,
+              fontSize: '13px',
+              fontWeight: 500,
+              display: 'block',
+              marginBottom: '4px',
+            }}
+          >
+            Building Accounting Skills for the Real World
+          </Text>
+          <Text 
+            style={{ 
+              color: colors.textSecondary,
+              fontSize: '12px',
+            }}
+          >
+            Sign in to your account
+          </Text>
         </div>
-       
 
         {error && (
           <Alert
@@ -211,111 +331,232 @@ const LoginPage = () => {
             showIcon
             closable
             onClose={() => setError(null)}
+            style={{
+              marginBottom: '24px',
+              borderRadius: '12px',
+              background: `linear-gradient(135deg, ${colors.cardDepth} 0%, ${colors.card} 100%)`,
+              border: `1px solid ${colors.border}`,
+            }}
           />
         )}
 
-        <div className="px-10">
           <Form
             form={form}
             name="login"
             onFinish={onFinish}
             layout="vertical"
-            className="space-y-2"
+          size="large"
           >
             <Form.Item
               name="login"
-              label="Email or Phone Number"
+            label={
+              <span style={{ color: colors.textPrimary, fontWeight: 500, fontSize: '13px' }}>
+                Email or Phone Number
+              </span>
+            }
               rules={[{ validator: validateLogin }, { required: true, message: 'Please input your email or phone number!' }]}
-              className="mb-1"
+            style={{ marginBottom: '12px' }}
             >
               <Input
-                prefix={<UserOutlined />}
+              prefix={<UserOutlined style={{ color: colors.textMuted }} />}
                 placeholder="Enter your email or phone number"
+              style={{
+                background: colors.cardDepth,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '10px',
+                color: colors.textPrimary,
+                height: '40px',
+              }}
               />
             </Form.Item>
 
             <Form.Item
               name="password"
-              label="Password"
+            label={
+              <span style={{ color: colors.textPrimary, fontWeight: 500, fontSize: '13px' }}>
+                Password
+              </span>
+            }
               rules={[
                 { required: true, message: 'Please input your password!' },
                 { min: 5, message: 'Password must be at least 5 characters!' }
               ]}
-              className="mb-1"
+            style={{ marginBottom: '16px' }}
             >
               <Input.Password
-                prefix={<LockOutlined />}
+              prefix={<LockOutlined style={{ color: colors.textMuted }} />}
                 placeholder="Enter your password"
+              style={{
+                background: colors.cardDepth,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '10px',
+                color: colors.textPrimary,
+                height: '40px',
+              }}
               />
             </Form.Item>
 
-            <Form.Item className="mb-1">
+          <Form.Item style={{ marginBottom: '12px' }}>
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
                 block
+              style={{
+                height: '44px',
+                borderRadius: '10px',
+                background: `linear-gradient(135deg, ${colors.primaryAccent} 0%, ${colors.secondaryAccent} 100%)`,
+                border: 'none',
+                color: colors.background,
+                fontWeight: 600,
+                fontSize: '14px',
+                boxShadow: `0 4px 12px rgba(227, 184, 87, 0.3)`,
+                transition: 'all 0.3s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.target.style.transform = 'translateY(-2px)';
+                e.target.style.boxShadow = `0 6px 16px rgba(227, 184, 87, 0.4)`;
+              }}
+              onMouseLeave={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = `0 4px 12px rgba(227, 184, 87, 0.3)`;
+              }}
               >
                 Sign in
               </Button>
             </Form.Item>
             
-            <div className="text-center mt-1">
+          <div className="text-center" style={{ marginBottom: '16px' }}>
               <Button 
                 type="link" 
-                className="text-primary p-0" 
                 onClick={() => setIsResetModalVisible(true)}
+              style={{
+                color: colors.primaryAccent,
+                padding: 0,
+                height: 'auto',
+                fontWeight: 500,
+                fontSize: '13px',
+              }}
               >
                 Forgot Password?
               </Button>
             </div>
             
-            <div className="text-center mt-1 text-[10px] text-gray-500">
-              By signing in, you agree to our <a href="https://www.ocpac.dcrc.ac.tz/terms.html" target="_blank" rel="noopener noreferrer" className="text-primary"><u>Terms and Conditions</u></a> and <a href="https://www.ocpac.dcrc.ac.tz/privacy.html" target="_blank" rel="noopener noreferrer" className="text-primary"><u>Privacy Policy</u></a>
+          <div 
+            className="text-center" 
+            style={{ 
+              marginBottom: '16px',
+              fontSize: '10px',
+              color: colors.textMuted,
+              lineHeight: '1.5',
+            }}
+          >
+            By signing in, you agree to our{' '}
+            <a 
+              href="https://www.ocpac.dcrc.ac.tz/terms.html" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ 
+                color: colors.primaryAccent,
+                textDecoration: 'underline',
+              }}
+            >
+              Terms and Conditions
+            </a>
+            {' '}and{' '}
+            <a 
+              href="https://www.ocpac.dcrc.ac.tz/privacy.html" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              style={{ 
+                color: colors.primaryAccent,
+                textDecoration: 'underline',
+              }}
+            >
+              Privacy Policy
+            </a>
             </div>
             
-            <div className="text-center mt-2">
-              <Text type="secondary">
-                Don't have an account? <Link to="/register" className="text-primary">Sign up</Link>
+          <div className="text-center">
+            <Text style={{ color: colors.textSecondary, fontSize: '13px' }}>
+              Don't have an account?{' '}
+              <Link 
+                to="/register" 
+                style={{ 
+                  color: colors.primaryAccent,
+                  fontWeight: 500,
+                }}
+              >
+                Sign up
+              </Link>
               </Text>
             </div>
           </Form>
-        </div>
       </Card>
 
       {/* Forgot Password Modal */}
       <Modal
-        title="Reset Password"
+        title={
+          <span style={{ color: colors.textPrimary, fontWeight: 600 }}>
+            Reset Password
+          </span>
+        }
         open={isResetModalVisible}
         onCancel={() => setIsResetModalVisible(false)}
         footer={null}
+        style={{
+          top: 100,
+        }}
       >
         <Form
           form={resetForm}
           name="resetPassword"
           onFinish={handleResetPassword}
           layout="vertical"
+          size="large"
         >
           <Form.Item
             name="email"
-            label="Email"
+            label={
+              <span style={{ color: colors.textPrimary, fontWeight: 500, fontSize: '13px' }}>
+                Email
+              </span>
+            }
             rules={[
               { required: true, message: 'Please input your email!' },
               { type: 'email', message: 'Please enter a valid email!' }
             ]}
+            style={{ marginBottom: '16px' }}
           >
             <Input
-              prefix={<MailOutlined />}
+              prefix={<MailOutlined style={{ color: colors.textMuted }} />}
               placeholder="Enter your email address"
+              style={{
+                background: colors.cardDepth,
+                border: `1px solid ${colors.border}`,
+                borderRadius: '10px',
+                color: colors.textPrimary,
+                height: '40px',
+              }}
             />
           </Form.Item>
 
-          <Form.Item>
+          <Form.Item style={{ marginBottom: 0 }}>
             <Button
               type="primary"
               htmlType="submit"
               loading={resetLoading}
               block
+              style={{
+                height: '44px',
+                borderRadius: '10px',
+                background: `linear-gradient(135deg, ${colors.primaryAccent} 0%, ${colors.secondaryAccent} 100%)`,
+                border: 'none',
+                color: colors.background,
+                fontWeight: 600,
+                fontSize: '14px',
+                boxShadow: `0 4px 12px rgba(227, 184, 87, 0.3)`,
+              }}
             >
               Send Reset Instructions
             </Button>

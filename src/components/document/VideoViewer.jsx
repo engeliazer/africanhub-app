@@ -565,7 +565,7 @@ const VideoViewer = ({
               }}
             >
               {Array(3).fill().map((_, j) => (
-                <span key={j}>DCRC </span>
+                <span key={j}>The African Hub </span>
               ))}
             </div>
           ))}

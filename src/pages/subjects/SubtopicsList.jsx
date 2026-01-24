@@ -4,18 +4,15 @@ import { PlusOutlined, EditOutlined, DeleteOutlined, SearchOutlined } from '@ant
 import subtopicsService from '../../services/subtopics';
 import topicsService from '../../services/topics';
 import subjectsService from '../../services/subjects';
-import coursesService from '../../services/courses';
 
 const SubtopicsList = () => {
   const [subtopics, setSubtopics] = useState([]);
   const [filteredSubtopics, setFilteredSubtopics] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [topics, setTopics] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSubtopic, setEditingSubtopic] = useState(null);
-  const [selectedCourse, setSelectedCourse] = useState(null);
   const [selectedSubject, setSelectedSubject] = useState(null);
   const [selectedTopic, setSelectedTopic] = useState(null);
   const [searchText, setSearchText] = useState('');
@@ -28,42 +25,30 @@ const SubtopicsList = () => {
   const formPopulatedRef = useRef(false);
   const [pendingFormValues, setPendingFormValues] = useState(null);
 
-  // Fetch courses for the dropdown
-  useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const response = await coursesService.getCourses();
-        setCourses(response || []);
-      } catch (error) {
-        console.error('Error fetching courses:', error);
-        message.error('Failed to fetch courses');
-      }
-    };
-    fetchCourses();
-  }, []);
-
-  // Fetch subjects when course is selected
+  // Fetch all subjects
   useEffect(() => {
     const fetchSubjects = async () => {
-      if (!selectedCourse) {
-        setSubjects([]);
-        return;
-      }
       try {
-        const response = await subjectsService.getSubjects(1, 100, selectedCourse);
+        const response = await subjectsService.getSubjects(1, 100);
         // Extract subjects from the nested data structure
-        const subjectsData = response.data?.subjects || [];
+        let subjectsData = [];
+        if (response && response.data) {
+          if (Array.isArray(response.data)) {
+            subjectsData = response.data;
+          } else if (response.data.subjects && Array.isArray(response.data.subjects)) {
+            subjectsData = response.data.subjects;
+          } else if (response.data.data && Array.isArray(response.data.data)) {
+            subjectsData = response.data.data;
+          }
+        }
         setSubjects(subjectsData);
-        // Reset subject and topic selections when course changes
-        setSelectedSubject(null);
-        setSelectedTopic(null);
       } catch (error) {
         console.error('Error fetching subjects:', error);
         message.error('Failed to fetch subjects');
       }
     };
     fetchSubjects();
-  }, [selectedCourse]);
+  }, []);
 
   // Fetch topics when subject is selected
   useEffect(() => {
@@ -144,13 +129,12 @@ const SubtopicsList = () => {
     const populateForm = async () => {
       if (isModalVisible && editingSubtopic && pendingFormValues && !formPopulatedRef.current) {
         // Check if options are available
-        const hasCourseOptions = courses.length > 0;
-        const needsSubjectOptions = pendingFormValues.course_id;
-        const needsTopicOptions = pendingFormValues.subject_id;
+        const needsSubjectOptions = pendingFormValues.subject_id;
+        const needsTopicOptions = pendingFormValues.topic_id;
         const hasSubjectOptions = needsSubjectOptions ? subjects.length > 0 : true;
         const hasTopicOptions = needsTopicOptions ? topics.length > 0 : true;
         
-        if (hasCourseOptions && hasSubjectOptions && hasTopicOptions) {
+        if (hasSubjectOptions && hasTopicOptions) {
           // Wait a bit more to ensure React has rendered the Select components
           await new Promise(resolve => setTimeout(resolve, 150));
           
@@ -163,7 +147,7 @@ const SubtopicsList = () => {
     };
     
     populateForm();
-  }, [isModalVisible, editingSubtopic, pendingFormValues, courses, subjects, topics, form]);
+  }, [isModalVisible, editingSubtopic, pendingFormValues, subjects, topics, form]);
 
   // Filter subtopics based on search text
   useEffect(() => {
@@ -210,23 +194,6 @@ const SubtopicsList = () => {
         setSelectedSubject(subjectId);
         setSelectedTopic(topic.id);
         
-        // Find which course this subject belongs to
-        let courseId = null;
-        for (const course of courses) {
-          try {
-            const response = await subjectsService.getSubjects(1, 100, course.id);
-            const courseSubjects = response.data?.subjects || [];
-            if (courseSubjects.some(s => s.id === subjectId)) {
-              courseId = course.id;
-              // Update subjects state for the dropdown
-              setSubjects(courseSubjects);
-              break;
-            }
-          } catch (err) {
-            // Continue searching
-          }
-        }
-        
         // Fetch topics for the subject
         if (subjectId) {
           try {
@@ -244,7 +211,6 @@ const SubtopicsList = () => {
           name: subtopic.name,
           description: subtopic.description || '',
           is_active: subtopic.is_active !== undefined ? subtopic.is_active : true,
-          course_id: courseId ? Number(courseId) : undefined,
           subject_id: subjectId ? Number(subjectId) : undefined,
           topic_id: subtopic.topic_id ? Number(subtopic.topic_id) : undefined
         };
@@ -282,27 +248,6 @@ const SubtopicsList = () => {
     form.resetFields();
     formPopulatedRef.current = false;
     setPendingFormValues(null);
-  };
-
-  const handleCourseChangeInForm = async (value) => {
-    // Clear dependent fields
-    form.setFieldValue('subject_id', undefined);
-    form.setFieldValue('topic_id', undefined);
-    
-    // Fetch subjects for the selected course
-    if (value) {
-      try {
-        const response = await subjectsService.getSubjects(1, 100, value);
-        const subjectsData = response.data?.subjects || [];
-        setSubjects(subjectsData);
-      } catch (error) {
-        console.error('Error fetching subjects:', error);
-        message.error('Failed to fetch subjects');
-        setSubjects([]);
-      }
-    } else {
-      setSubjects([]);
-    }
   };
 
   const handleSubjectChangeInForm = async (value) => {
@@ -445,23 +390,8 @@ const SubtopicsList = () => {
             <Space wrap>
               <Select
                 style={{ width: 200 }}
-                placeholder="Filter by Course"
-                allowClear
-                onChange={(value) => {
-                  setSelectedCourse(value);
-                  setSelectedSubject(null);
-                  setSelectedTopic(null);
-                }}
-                options={courses.map(course => ({
-                  value: course.id,
-                  label: course.name
-                }))}
-              />
-              <Select
-                style={{ width: 200 }}
                 placeholder="Filter by Subject"
                 allowClear
-                disabled={!selectedCourse}
                 value={selectedSubject}
                 onChange={(value) => {
                   setSelectedSubject(value);
@@ -526,28 +456,12 @@ const SubtopicsList = () => {
         >
           <Form form={form} layout="vertical">
             <Form.Item
-              name="course_id"
-              label="Course"
-              rules={[{ required: true, message: 'Please select a course' }]}
-            >
-              <Select
-                placeholder="Select a course"
-                onChange={handleCourseChangeInForm}
-                options={courses.map(course => ({
-                  value: course.id,
-                  label: course.name
-                }))}
-              />
-            </Form.Item>
-
-            <Form.Item
               name="subject_id"
               label="Subject"
               rules={[{ required: true, message: 'Please select a subject' }]}
             >
               <Select
                 placeholder="Select a subject"
-                disabled={!form.getFieldValue('course_id')}
                 onChange={handleSubjectChangeInForm}
                 options={subjects.map(subject => ({
                   value: subject.id,

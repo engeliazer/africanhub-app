@@ -1,15 +1,26 @@
-import { HomeIcon } from "@heroicons/react/16/solid";
-import {Link} from "react-router-dom";
+import { HomeOutlined } from "@ant-design/icons";
+import { Link } from "react-router-dom";
+import { useTheme } from "../../../contexts/ThemeContext";
 
 const HomeList = () => {
+  const { colors } = useTheme();
   return (
-    <li className="flex">
-      <div className="flex items-center py-2">
-        <Link to="/" className="text-gray-400 hover:text-gray-500">
-          <HomeIcon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-          {/*<span className="sr-only">{location.pathname}</span>*/}
-        </Link>
-      </div>
+    <li className="flex items-center">
+      <Link 
+        to="/" 
+        className="flex items-center transition-colors"
+        style={{
+          color: colors.textSecondary,
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = colors.primaryAccent;
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = colors.textSecondary;
+        }}
+      >
+        <HomeOutlined className="text-sm" />
+      </Link>
     </li>
   );
 };

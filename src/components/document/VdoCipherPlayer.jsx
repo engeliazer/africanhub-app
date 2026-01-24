@@ -202,7 +202,7 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
       visibility: visible !important;
     `;
 
-    // DCRC Logo - centered, smaller and circular
+    // African Hub Logo - centered, smaller and circular
     const logoContainer = document.createElement('div');
     logoContainer.style.cssText = `
       position: absolute;
@@ -213,22 +213,20 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
       z-index: 2147483647;
     `;
     const logoImg = document.createElement('img');
-    logoImg.src = '/dcrc.jpg';
-    logoImg.alt = 'DCRC Logo';
+    logoImg.src = '/ahubLogo.png';
+    logoImg.alt = 'African Hub Logo';
     logoImg.style.cssText = `
       width: 150px;
       height: 150px;
-      object-fit: cover;
+      object-fit: contain;
       border-radius: 50%;
       border: 2px solid rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
     `;
-    logoImg.onerror = () => {
-      logoImg.src = '/dcrc.png';
-    };
     logoContainer.appendChild(logoImg);
     overlay.appendChild(logoContainer);
 
-    // DCRC Text watermark overlay
+    // African Hub Text watermark overlay
     const textOverlay = document.createElement('div');
     textOverlay.style.cssText = `
       position: absolute;
@@ -259,7 +257,7 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
       `;
       for (let j = 0; j < 3; j++) {
         const span = document.createElement('span');
-        span.textContent = 'DCRC ';
+        span.textContent = 'African Hub ';
         row.appendChild(span);
       }
       textOverlay.appendChild(row);
@@ -555,7 +553,7 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
           }}
         />
 
-        {/* DCRC Logo Watermark - Centered, Smaller and Circular */}
+        {/* African Hub Logo Watermark - Centered, Smaller and Circular */}
         <div style={{
           position: 'absolute',
           top: '50%',
@@ -566,23 +564,20 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
           opacity: 0.15
         }}>
           <img 
-            src="/dcrc.jpg" 
-            alt="DCRC Logo" 
+            src="/ahubLogo.png" 
+            alt="African Hub Logo" 
             style={{
               width: '150px',
               height: '150px',
-              objectFit: 'cover',
+              objectFit: 'contain',
               borderRadius: '50%',
-              border: '2px solid rgba(255, 255, 255, 0.2)'
-            }}
-            onError={(e) => {
-              // Fallback to PNG if JPG doesn't load
-              e.target.src = '/dcrc.png';
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              background: 'rgba(255, 255, 255, 0.05)'
             }}
           />
         </div>
 
-        {/* DCRC Text Watermark Overlay */}
+        {/* African Hub Text Watermark Overlay */}
         <div style={{
           position: 'absolute',
           top: 0,
@@ -613,7 +608,7 @@ const VdoCipherPlayer = ({ materialId, materialName, onVideoEnd, onError, onVide
               }}
             >
               {Array(3).fill().map((_, j) => (
-                <span key={j}>DCRC </span>
+                <span key={j}>African Hub </span>
               ))}
             </div>
           ))}

@@ -15,7 +15,6 @@ import studyMaterialCategoriesService from '../../services/studyMaterialCategori
 import subjectsService from '../../services/subjects';
 import subtopicsService from '../../services/subtopics';
 import topicsService from '../../services/topics';
-import coursesService from '../../services/courses';
 import DocumentViewer from '../../components/document/DocumentViewer';
 import VideoViewer from '../../components/document/VideoViewer';
 import HlsVideoViewer from '../../components/document/HlsVideoViewer';
@@ -27,7 +26,7 @@ import HlsVideoUpload from '../../components/document/HlsVideoUpload';
 import { BASE_URL } from '../../config';
 import axios from '../../utils/axios';
 
-const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, selectedTopic }) => {
+const SubtopicMaterialsList = ({ subtopicId, selectedSubject, selectedTopic }) => {
   const FILTER_STORAGE_KEY = 'subtopicMaterialsFilters';
 
   // Read any previously saved filters from localStorage (once per mount)
@@ -45,16 +44,12 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
   const navigate = useNavigate();
   const [materials, setMaterials] = useState({});  // Materials organized by category
   const [categories, setCategories] = useState(initialFilters.categories || []);
-  const [courses, setCourses] = useState(initialFilters.courses || []);
   const [subjects, setSubjects] = useState(initialFilters.subjects || []);
   const [topics, setTopics] = useState(initialFilters.topics || []);
   const [subtopics, setSubtopics] = useState(initialFilters.subtopics || []);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   // Prefer parent-driven props first, then saved filters, then null
-  const [currentSelectedCourse, setCurrentSelectedCourse] = useState(
-    selectedCourse || initialFilters.courseId || null
-  );
   const [currentSelectedSubject, setCurrentSelectedSubject] = useState(
     selectedSubject || initialFilters.subjectId || null
   );
@@ -141,57 +136,40 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
 
   // Fetch courses for dropdown
   const fetchCourses = async () => {
-    try {
-      const response = await coursesService.getCourses();
-      // The response is an array directly, not nested in data.courses
-      const coursesData = response || [];
-      setCourses(coursesData);
-      console.log('Fetched courses:', coursesData); // Debug log
+    // Courses are no longer used - set empty array
+    setCourses([]);
+  };
 
-      // Persist courses to localStorage along with filters
+  // Fetch all subjects
+  const fetchSubjects = async () => {
+    try {
+      const response = await subjectsService.getSubjects(1, 100);
+      console.log('Subjects API Response:', response);
+      
+      // Extract the subjects array from the nested data structure
+      let subjectsData = [];
+      if (response && response.data) {
+        if (Array.isArray(response.data)) {
+          subjectsData = response.data;
+        } else if (response.data.subjects && Array.isArray(response.data.subjects)) {
+          subjectsData = response.data.subjects;
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          subjectsData = response.data.data;
+        }
+      }
+      
+      setSubjects(subjectsData);
+
+      // Persist subjects
       try {
         const raw = localStorage.getItem(FILTER_STORAGE_KEY);
         const existing = raw ? JSON.parse(raw) || {} : {};
         localStorage.setItem(
           FILTER_STORAGE_KEY,
-          JSON.stringify({ ...existing, courses: coursesData })
+          JSON.stringify({ ...existing, subjects: subjectsData })
         );
       } catch (err) {
-        console.error('Error caching courses for subtopic materials:', err);
-      }
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-      message.error('Failed to fetch courses');
-    }
-  };
-
-  // Fetch subjects based on selected course
-  const fetchSubjects = async (courseId) => {
-    if (!courseId) {
-      setSubjects([]);
-      return;
-    }
-    try {
-      const response = await subjectsService.getSubjects(1, 100, courseId);
-      console.log('Subjects API Response:', response);
-      if (response.status === 'success') {
-        // Extract the subjects array from the nested data structure
-        const subjectsData = response.data.subjects || [];
-        setSubjects(subjectsData);
-
-        // Persist subjects for the current course
-        try {
-          const raw = localStorage.getItem(FILTER_STORAGE_KEY);
-          const existing = raw ? JSON.parse(raw) || {} : {};
-          localStorage.setItem(
-            FILTER_STORAGE_KEY,
-            JSON.stringify({ ...existing, subjects: subjectsData })
-          );
-        } catch (err) {
-          console.error('Error caching subjects for subtopic materials:', err);
-        }
-      } else {
-        throw new Error('Failed to fetch subjects');
+        console.error('Error caching subjects for subtopic materials:', err);
       }
     } catch (error) {
       console.error('Error fetching subjects:', error);
@@ -359,15 +337,9 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
 
   useEffect(() => {
     fetchCategories();
-    fetchCourses();
+    fetchSubjects();
   }, []);
 
-  // Ensure dependent options are loaded when we have saved selections but empty arrays
-  useEffect(() => {
-    if (currentSelectedCourse && subjects.length === 0) {
-      fetchSubjects(currentSelectedCourse);
-    }
-  }, [currentSelectedCourse]);
 
   useEffect(() => {
     if (currentSelectedSubject && topics.length === 0) {
@@ -385,7 +357,6 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
   useEffect(() => {
     try {
       const data = {
-        courseId: currentSelectedCourse,
         subjectId: currentSelectedSubject,
         topicId: currentSelectedTopic,
         subtopicId: selectedSubtopic,
@@ -395,13 +366,8 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
     } catch (err) {
       console.error('Error saving subtopic materials filters:', err);
     }
-  }, [currentSelectedCourse, currentSelectedSubject, currentSelectedTopic, selectedSubtopic, activeCategory]);
+  }, [currentSelectedSubject, currentSelectedTopic, selectedSubtopic, activeCategory]);
 
-  useEffect(() => {
-    if (selectedCourse) {
-      fetchSubjects(selectedCourse);
-    }
-  }, [selectedCourse]);
 
   useEffect(() => {
     if (selectedSubject) {
@@ -452,10 +418,6 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
   };
 
   useEffect(() => {
-    if (selectedCourse) {
-      setCurrentSelectedCourse(selectedCourse);
-      fetchSubjects(selectedCourse);
-    }
     if (selectedSubject) {
       setCurrentSelectedSubject(selectedSubject);
       fetchTopics(selectedSubject);
@@ -470,20 +432,7 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
         fetchMaterials(subtopicId, activeCategory);
       }
     }
-  }, [selectedCourse, selectedSubject, selectedTopic, subtopicId]);
-
-  const handleCourseChange = (value) => {
-    setCurrentSelectedCourse(value);
-    // Reset dependent selections when course changes
-    setCurrentSelectedSubject(null);
-    setCurrentSelectedTopic(null);
-    setSelectedSubtopic(null);
-    setSubjects([]);
-    setTopics([]);
-    setSubtopics([]);
-    setMaterials({});
-    fetchSubjects(value);
-  };
+  }, [selectedSubject, selectedTopic, subtopicId]);
 
   const handleSubjectChange = (value) => {
     setCurrentSelectedSubject(value);
@@ -1555,27 +1504,9 @@ const SubtopicMaterialsList = ({ subtopicId, selectedCourse, selectedSubject, se
               gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '12px'
             }}>
-              <Form.Item label="Course" style={{ marginBottom: 0 }}>
-                <Select
-                  placeholder="Select Course"
-                  value={currentSelectedCourse}
-                  onChange={handleCourseChange}
-                  showSearch
-                  optionFilterProp="label"
-                  filterOption={(input, option) =>
-                    (option?.label ?? '').toLowerCase().includes(input.toLowerCase())
-                  }
-                  options={courses.map(course => ({
-                    value: course.id,
-                    label: course.name
-                  }))}
-                  size={window.innerWidth < 768 ? 'small' : 'middle'}
-                />
-              </Form.Item>
               <Form.Item label="Subject" style={{ marginBottom: 0 }}>
                 <Select
                   placeholder="Select Subject"
-                  disabled={!currentSelectedCourse}
                   value={currentSelectedSubject}
                   onChange={handleSubjectChange}
                   showSearch

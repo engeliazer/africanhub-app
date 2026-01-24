@@ -18,20 +18,24 @@ import {
   Modal,
   Divider
 } from 'antd';
-import { 
-  BookOutlined, 
-  ReadOutlined, 
-  FileTextOutlined, 
+import {
+  BookOutlined,
+  ReadOutlined,
+  FileTextOutlined,
   SearchOutlined,
   EyeOutlined,
   DollarOutlined,
   InfoCircleOutlined,
   ClockCircleOutlined,
-  LoginOutlined
+  LoginOutlined,
+  DownOutlined,
+  UpOutlined
 } from '@ant-design/icons';
 import axios from '../utils/axios';
 import { getTokenLocal } from '../services/utils/authorization';
+import subjectsService from '../services/subjects';
 import { useNavigate } from 'react-router-dom';
+import { useTheme } from '../contexts/ThemeContext';
 
 const { Title, Text, Paragraph } = Typography;
 
@@ -45,6 +49,7 @@ const formatCurrency = (amount) => {
 };
 
 const CourseStructure = () => {
+  const { colors } = useTheme();
   const [courses, setCourses] = useState([]);
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +58,9 @@ const CourseStructure = () => {
   const [searchText, setSearchText] = useState('');
   const [filteredCourses, setFilteredCourses] = useState([]);
   const [filteredSubjects, setFilteredSubjects] = useState([]);
-  const [currentView, setCurrentView] = useState('courses');
+  const [currentView, setCurrentView] = useState('subjects');
   const [selectedCourse, setSelectedCourse] = useState(null);
+  const [expandedSubjects, setExpandedSubjects] = useState(new Set());
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -78,41 +84,35 @@ const CourseStructure = () => {
         return;
       }
       
-      // Fetch courses and subjects from API
-      const [coursesResponse, subjectsResponse] = await Promise.all([
-        axios.get('/courses', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        }),
-        axios.get('/subjects', {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Accept': 'application/json',
-            'Content-Type': 'application/json'
-          }
-        })
-      ]);
-      
-      console.log('Courses Response:', coursesResponse.data);
-      console.log('Subjects Response:', subjectsResponse.data);
-      
-      if (coursesResponse.data && coursesResponse.data.status === 'success') {
-        setCourses(coursesResponse.data.data || []);
-      }
-      
-      if (subjectsResponse.data && subjectsResponse.data.status === 'success') {
-        // Handle nested subjects structure
-        const subjectsData = subjectsResponse.data.data;
-        if (subjectsData && subjectsData.subjects) {
+      // Fetch subjects using the subjects service
+      const subjectsResponse = await subjectsService.getSubjects(1, 100); // Get all subjects without pagination
+
+      console.log('Subjects Response:', subjectsResponse);
+      console.log('Response status:', subjectsResponse?.status);
+      console.log('Response data:', subjectsResponse?.data);
+
+      // Courses are no longer used - set empty array
+      setCourses([]);
+
+      if (subjectsResponse && subjectsResponse.status === 'success') {
+        // Handle new subjects structure
+        const subjectsData = subjectsResponse.data;
+        console.log('Subjects data:', subjectsData);
+
+        if (subjectsData && subjectsData.subjects && Array.isArray(subjectsData.subjects)) {
+          console.log('Found subjects array:', subjectsData.subjects);
           setSubjects(subjectsData.subjects);
-        } else if (Array.isArray(subjectsData)) {
+        } else if (subjectsData && Array.isArray(subjectsData)) {
+          console.log('Subjects data is array:', subjectsData);
+          // Fallback for array format
           setSubjects(subjectsData);
         } else {
+          console.log('No subjects found in response');
           setSubjects([]);
         }
+      } else {
+        console.log('Response status not success or response missing');
+        setSubjects([]);
       }
       
       setError(null);
@@ -136,13 +136,15 @@ const CourseStructure = () => {
         course.code?.toLowerCase().includes(searchText.toLowerCase())
       );
       setFilteredCourses(filtered);
-    } else if (currentView === 'subjects' && selectedCourse && Array.isArray(subjects)) {
-      // Filter subjects by selected course AND search text
-      const filtered = subjects.filter(subject => 
-        subject.course_id === selectedCourse.id &&
-        (subject.name?.toLowerCase().includes(searchText.toLowerCase()) ||
-         subject.code?.toLowerCase().includes(searchText.toLowerCase()))
+    } else if (currentView === 'subjects' && Array.isArray(subjects)) {
+      // Filter subjects by search text only (no course filtering since courses are not used)
+      console.log('Filtering subjects:', subjects.length, 'subjects found');
+      const filtered = subjects.filter(subject =>
+        subject.name?.toLowerCase().includes(searchText.toLowerCase()) ||
+        subject.code?.toLowerCase().includes(searchText.toLowerCase()) ||
+        subject.description?.toLowerCase().includes(searchText.toLowerCase())
       );
+      console.log('Filtered subjects:', filtered.length, 'subjects after filtering');
       setFilteredSubjects(filtered);
     }
   };
@@ -150,17 +152,8 @@ const CourseStructure = () => {
   const handleViewSubjects = (course) => {
     console.log('Selected course:', course);
     console.log('All subjects:', subjects);
-    console.log('Subjects type:', typeof subjects);
-    console.log('Is subjects array:', Array.isArray(subjects));
-    
-    if (Array.isArray(subjects)) {
-      const courseSubjects = subjects.filter(subject => subject.course_id === course.id);
-      console.log('Subjects for this course:', courseSubjects);
-    } else {
-      console.log('Subjects is not an array:', subjects);
-    }
-    
-    setSelectedCourse(course);
+    // Since courses are no longer used, just show all subjects directly
+    console.log('Showing all subjects since courses are no longer used');
     setCurrentView('subjects');
     setSearchText('');
   };
@@ -169,6 +162,16 @@ const CourseStructure = () => {
     setCurrentView('courses');
     setSelectedCourse(null);
     setSearchText('');
+  };
+
+  const handleToggleSubjectExpansion = (subjectId) => {
+    const newExpanded = new Set(expandedSubjects);
+    if (newExpanded.has(subjectId)) {
+      newExpanded.delete(subjectId);
+    } else {
+      newExpanded.add(subjectId);
+    }
+    setExpandedSubjects(newExpanded);
   };
   
   // Define table columns
@@ -319,21 +322,11 @@ const CourseStructure = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div>
               <Title level={4} style={{ margin: 0 }}>
-                {currentView === 'courses' ? 'Course Levels' : `${selectedCourse?.name} - Subjects`}
+                Available Subjects
               </Title>
-              {currentView === 'subjects' && (
-                <Button 
-                  type="link" 
-                  icon={<BookOutlined />} 
-                  onClick={handleBackToCourses}
-                  style={{ padding: 0, height: 'auto' }}
-                >
-                  Back to Course Levels
-                </Button>
-              )}
             </div>
             <Input
-              placeholder={`Search ${currentView}...`}
+              placeholder="Search subjects..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -346,29 +339,11 @@ const CourseStructure = () => {
         {loading ? (
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <Spin size="large" />
-            <div style={{ marginTop: 16 }}>Loading course structure...</div>
+            <div style={{ marginTop: 16, color: colors.textSecondary }}>Loading course structure...</div>
           </div>
-        ) : currentView === 'courses' ? (
-          filteredCourses.length === 0 ? (
-            <Empty description="No course levels found" />
-          ) : (
-            <Table
-              columns={coursesColumns}
-              dataSource={filteredCourses}
-              rowKey="id"
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: true,
-                showQuickJumper: true,
-                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} course levels`,
-              }}
-              scroll={{ x: 'max-content' }}
-              size="small"
-            />
-          )
         ) : (
           filteredSubjects.length === 0 ? (
-            <Empty description="No subjects found for this course" />
+            <Empty description="No subjects found" />
           ) : (
             <Table
               columns={subjectsColumns}
@@ -379,6 +354,58 @@ const CourseStructure = () => {
                 showSizeChanger: true,
                 showQuickJumper: true,
                 showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} subjects`,
+              }}
+              expandable={{
+                expandedRowRender: (record) => (
+                  <div style={{ padding: '16px', background: colors.background, borderRadius: '6px' }}>
+                    <Text strong style={{ color: colors.textPrimary, marginBottom: '12px', display: 'block' }}>
+                      Topics in {record.name}
+                    </Text>
+                    {record.topics && record.topics.length > 0 ? (
+                      <div style={{ paddingLeft: '20px' }}>
+                        {record.topics.map((topic, index) => (
+                          <div key={topic.id} style={{ marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Text style={{ color: colors.primaryAccent, fontSize: '12px', minWidth: '16px' }}>
+                              {index + 1}.
+                            </Text>
+                            <div style={{ flex: 1 }}>
+                              <Text style={{ color: colors.textPrimary, fontSize: '14px' }}>
+                                <Text style={{ color: colors.textSecondary }}>
+                                  {topic.code}
+                                </Text>
+                                <Text strong style={{ marginLeft: '4px' }}>
+                                  : {topic.name}
+                                </Text>
+                                {topic.description && (
+                                  <Text style={{ color: colors.textMuted, marginLeft: '8px' }}>
+                                    • {topic.description}
+                                  </Text>
+                                )}
+                              </Text>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <Text style={{ color: colors.textSecondary, fontStyle: 'italic', paddingLeft: '20px' }}>
+                        No topics available for this subject
+                      </Text>
+                    )}
+                  </div>
+                ),
+                expandedRowKeys: Array.from(expandedSubjects),
+                onExpand: (expanded, record) => {
+                  handleToggleSubjectExpansion(record.id);
+                },
+                expandIcon: ({ expanded, onExpand, record }) => (
+                  <Button
+                    type="text"
+                    icon={expanded ? <UpOutlined /> : <DownOutlined />}
+                    onClick={(e) => onExpand(record, e)}
+                    size="small"
+                    style={{ color: colors.primaryAccent }}
+                  />
+                ),
               }}
               scroll={{ x: 'max-content' }}
               size="small"

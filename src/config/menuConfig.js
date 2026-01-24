@@ -23,7 +23,10 @@ import {
   AccountBookOutlined,
   ClockCircleOutlined,
   ReconciliationOutlined,
-  StarOutlined
+  StarOutlined,
+  FolderOutlined,
+  FolderOpenOutlined,
+  FileOutlined
 } from '@ant-design/icons';
 
 // Export permissions mapping
@@ -71,27 +74,24 @@ export const menuConfig = [
     permissions: ['facilitation.view'],
     children: [
       {
-        key: 'courses',
-        label: 'Courses',
-        path: '/courses/list',
-        permissions: ['facilitation.courses.view'],
-      },
-      {
         key: 'subjects',
         label: 'Subjects',
         path: '/subjects/list',
+        icon: FileTextOutlined,
         permissions: ['facilitation.view']
       },
       {
         key: 'topics',
         label: 'Topics',
         path: '/subjects/topics',
+        icon: FolderOutlined,
         permissions: ['facilitation.view']
       },
       {
         key: 'subtopics',
         label: 'Subtopics',
         path: '/subjects/subtopics',
+        icon: FolderOpenOutlined,
         permissions: ['facilitation.view']
       },
       {
@@ -104,55 +104,13 @@ export const menuConfig = [
     ]
   },
   {
-    key: 'class-seasons',
-    label: 'Class Seasons',
-    icon: CalendarOutlined,
-    module: 'facilitation',
-    permissions: ['facilitation.view'],
-    children: [
-      {
-        key: 'seasons',
-        label: 'Seasons',
-        path: '/seasons',
-        permissions: ['facilitation.view']
-      },
-      {
-        key: 'season-subjects',
-        label: 'Season Subjects',
-        path: '/seasons/subjects',
-        permissions: ['facilitation.view']
-      },
-      {
-        key: 'season-applicants',
-        label: 'Season Applicants',
-        path: '/seasons/applicants',
-        permissions: ['facilitation.view']
-      },
-    ]
-  },
-  {
     key: 'study-materials',
     label: 'Study Materials',
+    path: '/study-materials',
     icon: BookOutlined,
     module: 'facilitation',
     roles: ['FACILITATOR', 'SYSADMIN'],
-    permissions: ['facilitation.view'],
-    children: [
-      {
-        key: 'material-categories',
-        label: 'Material Categories',
-        path: '/study-materials/categories',
-        roles: ['FACILITATOR', 'SYSADMIN'],
-        permissions: ['facilitation.view']
-      },
-      {
-        key: 'subtopic-materials',
-        label: 'Subtopic Materials',
-        path: '/study-materials/subtopic-materials',
-        roles: ['FACILITATOR', 'SYSADMIN'],
-        permissions: ['facilitation.view']
-      }
-    ]
+    permissions: ['facilitation.view']
   },
   {
     key: 'instructors',
@@ -166,6 +124,7 @@ export const menuConfig = [
         key: 'instructors-list',
         label: 'Manage Instructors',
         path: '/instructors/list',
+        icon: UsergroupAddOutlined,
         roles: ['FACILITATOR', 'SYSADMIN'],
         permissions: ['facilitation.view']
       }
@@ -282,6 +241,7 @@ export const menuConfig = [
         key: 'reports-accounting',
         label: 'Accounting Reports',
         path: '/reports/accounting',
+        icon: BarChartOutlined,
         permissions: ['reports.view', 'accounting.view']
       }
     ]
@@ -297,6 +257,7 @@ export const menuConfig = [
         key: 'user-settings',
         label: 'User Settings',
         path: '/support/users',
+        icon: SettingOutlined,
         permissions: ['settings.manage']
       },
       {

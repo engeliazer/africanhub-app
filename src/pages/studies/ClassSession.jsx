@@ -44,21 +44,24 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import coursesService from '../../services/courses';
 import userService from '../../services/user';
 import DocumentViewer from '../../components/document/DocumentViewer';
 import HlsVideoViewer from '../../components/document/HlsVideoViewer';
 import DRMVideoPlayer from '../../components/document/DRMVideoPlayer';
 import subtopicMaterialsService from '../../services/subtopicMaterials';
 import studyMaterialCategoriesService from '../../services/studyMaterialCategories';
+import subjectsService from '../../services/subjects';
+import coursesService from '../../services/courses';
 import { getTokenLocal } from '../../services/utils/authorization';
 import CategoryMaterialsList from '../../components/studies/CategoryMaterialsList';
 import api from '../../services/axios';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { Header, Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 
 const ClassSession = () => {
+  const { colors } = useTheme();
   const navigate = useNavigate();
   const { subjectId } = useParams();
   const { token: authContextToken } = useAuth();
@@ -114,20 +117,43 @@ const ClassSession = () => {
   const fetchApprovedCourses = async () => {
     try {
       setLoading(true);
-      const response = await coursesService.getApprovedCourses();
-      
-      if (response.status === 'success' && response.data?.courses) {
-        setCourses(response.data.courses);
-        // Set first course as default if exists
-        if (response.data.courses.length > 0) {
-          setSelectedCourse(response.data.courses[0]);
+
+      console.log('Fetching approved courses');
+      const coursesResponse = await coursesService.getApprovedCourses();
+
+      if (coursesResponse.status === 'success') {
+        const responseData = coursesResponse.data || {};
+        const subjectsData = responseData.subjects || [];
+        console.log('Fetched approved subjects:', subjectsData);
+
+        // Since the API returns subjects directly, we'll organize them by course if needed
+        // For now, we'll treat all subjects as coming from a single "Approved Courses" container
+        const organizedData = [{
+          id: 'approved',
+          code: 'APPROVED',
+          name: 'Approved Courses',
+          subjects: subjectsData
+        }];
+
+        setCourses(organizedData);
+
+        // If subjectId is provided, find and select that subject
+        if (subjectId) {
+          const subject = subjectsData.find(sub => sub.id === parseInt(subjectId));
+
+          if (subject) {
+            setSelectedCourse(organizedData[0]); // Set the container course
+            setSelectedSubject(subject);
+            setCurrentView('topics'); // Jump directly to topics if subject is specified
+          }
         }
       } else {
-        message.error('Failed to load approved courses');
+        throw new Error('Failed to fetch approved subjects');
       }
     } catch (error) {
       console.error('Error fetching approved courses:', error);
-      message.error('Failed to load approved courses');
+      setError('Failed to load approved subjects');
+      message.error('Failed to load approved subjects');
     } finally {
       setLoading(false);
     }
@@ -160,53 +186,21 @@ const ClassSession = () => {
       }
     };
 
-    // Fetch approved courses and handle subject selection
+    // Fetch approved courses
     const initializeData = async () => {
       try {
         setLoading(true);
-        const response = await coursesService.getApprovedCourses();
-        
-        if (response.status === 'success' && response.data?.courses) {
-          console.log('All courses:', response.data.courses);
-          setCourses(response.data.courses);
-          
-          // Only auto-select items if we have a subjectId from URL
-          if (subjectId) {
-            // Find the subject in any of the courses
-            for (const course of response.data.courses) {
-              console.log('Checking course:', course.name, 'subjects:', course.subjects);
-              const subject = course.subjects?.find(s => s.id === parseInt(subjectId));
-              if (subject) {
-                console.log('Found subject:', subject.name);
-                setSelectedCourse(course);
-                setSelectedSubject(subject);
-                // Find and set the first topic and subtopic if available
-                if (subject.topics && subject.topics.length > 0) {
-                  const firstTopic = subject.topics[0];
-                  setSelectedTopic(firstTopic);
-                  if (firstTopic.subtopics && firstTopic.subtopics.length > 0) {
-                    setSelectedSubtopic(firstTopic.subtopics[0]);
-                  }
-                }
-                break;
-              }
-            }
-          }
-        } else {
-          message.error('Failed to load approved courses');
-        }
+        await fetchApprovedCourses();
       } catch (error) {
-        console.error('Error fetching approved courses:', error);
+        console.error('Error initializing data:', error);
         if (error.response?.status === 401) {
           message.error('Your session has expired. Please log in again.');
-          navigate('/login', { 
-            state: { 
+          navigate('/login', {
+            state: {
               from: { pathname: window.location.pathname },
               message: 'Your session has expired. Please log in again.'
             }
           });
-        } else {
-          message.error('Failed to load approved courses');
         }
       } finally {
         setLoading(false);
@@ -417,7 +411,7 @@ const ClassSession = () => {
             <div style={{ fontWeight: 500, marginBottom: 8 }}>
               {subtitle || 'This content is protected. Screen capture or restricted actions are not permitted.'}
             </div>
-            <div style={{ color: '#666' }}>
+            <div style={{ color: colors.textMuted }}>
               <p style={{ marginBottom: 8 }}>
                 To safeguard learning materials and comply with our usage policy, certain actions are blocked while viewing protected videos. This helps prevent unauthorized copying, recording, or sharing.
               </p>
@@ -621,7 +615,7 @@ const ClassSession = () => {
       render: (name, record) => (
         <div>
           <div>{name}</div>
-          <div style={{ fontSize: '12px', color: '#666' }}>
+          <div style={{ fontSize: '12px', color: colors.textMuted }}>
             {record.file_type === 'video' ? (
               <PlayCircleOutlined style={{ marginRight: 4 }} />
             ) : (
@@ -640,7 +634,7 @@ const ClassSession = () => {
         <div>
           <div>{(size / 1024 / 1024).toFixed(2)} MB</div>
           {record.video_duration && (
-            <div style={{ fontSize: '12px', color: '#666' }}>
+            <div style={{ fontSize: '12px', color: colors.textMuted }}>
               <ClockCircleOutlined style={{ marginRight: 4 }} />
               {record.video_duration} seconds
             </div>
@@ -657,7 +651,7 @@ const ClassSession = () => {
         return (
           <div>
             <div>{dateObj.toLocaleDateString()}</div>
-            <div style={{ fontSize: '12px', color: '#666' }}>
+            <div style={{ fontSize: '12px', color: colors.textMuted }}>
               {dateObj.toLocaleTimeString()}
             </div>
           </div>
@@ -706,7 +700,7 @@ const ClassSession = () => {
         }
       }
     ];
-    
+
     if (selectedCourse) {
       items.push({
         title: selectedCourse.name,
@@ -717,7 +711,7 @@ const ClassSession = () => {
         }
       });
     }
-    
+
     if (selectedSubject) {
       items.push({
         title: selectedSubject.name,
@@ -727,7 +721,7 @@ const ClassSession = () => {
         }
       });
     }
-    
+
     if (selectedTopic) {
       items.push({
         title: selectedTopic.name,
@@ -736,13 +730,13 @@ const ClassSession = () => {
         }
       });
     }
-    
+
     if (selectedSubtopic) {
       items.push({
         title: selectedSubtopic.name
       });
     }
-    
+
     return items;
   };
   
@@ -793,16 +787,21 @@ const ClassSession = () => {
   const renderCoursesView = () => {
     if (loading) {
       return (
-        <div className="flex items-center justify-center h-64">
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '256px'
+        }}>
           <Spin size="large" />
         </div>
       );
     }
 
-    if (courses.length === 0) {
+    if (courses.length === 0 || !courses[0]?.subjects?.length) {
       return (
         <Empty
-          description="No approved courses available"
+          description="No approved subjects available"
           image={Empty.PRESENTED_IMAGE_SIMPLE}
         />
       );
@@ -810,11 +809,11 @@ const ClassSession = () => {
 
     return (
       <div>
-        <Card 
-          title={<span><BookOutlined /> My Courses & Subjects</span>}
+        <Card
+          title={<span><BookOutlined /> My Approved Subjects</span>}
           extra={
             <Input
-              placeholder="Search subjects by code or name..."
+              placeholder="Search approved subjects..."
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
@@ -826,7 +825,7 @@ const ClassSession = () => {
           {courses.map((course) => {
             // Filter subjects based on search text
             const filteredSubjects = (course.subjects || []).filter(subject =>
-              !searchText || 
+              !searchText ||
               subject.code.toLowerCase().includes(searchText.toLowerCase()) ||
               subject.name.toLowerCase().includes(searchText.toLowerCase())
             );
@@ -837,10 +836,17 @@ const ClassSession = () => {
             return (
               <div key={course.id} style={{ marginBottom: 24 }}>
                 {/* Course Header Row */}
-                <div className="course-header">
+                <div style={{
+                  background: colors.primary,
+                  color: 'white',
+                  padding: '12px 16px',
+                  fontWeight: 'bold',
+                  fontSize: '16px',
+                  borderRadius: '4px 4px 0 0'
+                }}>
                   {course.code}: {course.name}
                 </div>
-                
+
                 {/* Subjects Table */}
                 <Table
                   dataSource={filteredSubjects}
@@ -917,12 +923,12 @@ const ClassSession = () => {
       <Card 
         title={
           <Space>
-            <Button 
-              icon={<ArrowLeftOutlined />} 
+            <Button
+              icon={<ArrowLeftOutlined />}
               onClick={handleBackToCourses}
-              style={{ 
-                color: '#277186', 
-                borderColor: '#277186',
+              style={{
+                color: colors.primary,
+                borderColor: colors.primary,
                 fontWeight: 500
               }}
             >
@@ -1019,8 +1025,8 @@ const ClassSession = () => {
               icon={<ArrowLeftOutlined />} 
               onClick={handleBackToTopics}
               style={{ 
-                color: '#277186', 
-                borderColor: '#277186',
+                color: colors.primary, 
+                borderColor: colors.primary,
                 fontWeight: 500
               }}
             >
@@ -1117,8 +1123,8 @@ const ClassSession = () => {
               icon={<ArrowLeftOutlined />} 
               onClick={handleBackToSubtopics}
               style={{ 
-                color: '#277186', 
-                borderColor: '#277186',
+                color: colors.primary, 
+                borderColor: colors.primary,
                 fontWeight: 500
               }}
             >
@@ -1181,15 +1187,34 @@ const ClassSession = () => {
   };
   
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4">
+    <div style={{ minHeight: '100vh', background: colors.background }}>
+      <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '16px 16px 16px 16px' }}>
         {/* Guide Message */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
-          <div className="flex items-start space-x-2">
-            <InfoCircleOutlined className="text-brandYellow mt-1" />
+        <div style={{
+          background: colors.card,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '8px',
+          padding: '12px',
+          marginBottom: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+            <InfoCircleOutlined style={{ color: colors.primaryAccent, marginTop: '4px' }} />
             <div>
-              <h4 className="text-sm font-medium text-brandGreen mb-1">How to Access Materials</h4>
-              <ol className="text-sm text-brandGreen space-y-1">
+              <h4 style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                color: colors.primaryAccent,
+                marginBottom: '4px',
+                margin: 0
+              }}>
+                How to Access Materials
+              </h4>
+              <ol style={{
+                fontSize: '14px',
+                color: colors.textPrimary,
+                margin: 0,
+                paddingLeft: '18px'
+              }}>
                 <li>1. Browse through <b>My Courses</b> below</li>
                 <li>2. Click <b>View</b> next to any subject to see its topics</li>
                 <li>3. Click <b>View</b> next to any topic to see its subtopics</li>
@@ -1205,7 +1230,7 @@ const ClassSession = () => {
             <Spin size="large" />
           </div>
         ) : error ? (
-          <div className="text-center py-8">
+          <div style={{ textAlign: 'center', padding: '32px 0' }}>
             <Alert
               message="Error"
               description={error}
@@ -1222,7 +1247,7 @@ const ClassSession = () => {
             title={
               <div>
                 <div>View {materialCategories.find(c => c.id === currentCategoryId)?.code === 'VIDEOS' ? 'Video' : 'Document'}: {currentFileName}</div>
-                <div style={{ fontSize: '14px', color: '#666' }}>
+                <div style={{ fontSize: '14px', color: colors.textMuted }}>
                   Protection Status: {currentCategoryId ? (materialCategories.find(c => c.id === currentCategoryId)?.is_protected ? 'Protected' : 'Not Protected') : 'Unknown'}
                 </div>
               </div>

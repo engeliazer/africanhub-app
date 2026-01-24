@@ -1,8 +1,19 @@
 
 const Logo = () => {
     return (
-        <div className={"mb-[-6px] z-50 mt-3"}>
-          <img src="/dcrc2.png" alt="DCRC Logo" className="logo-image rounded-lg mb-[-20px]" />
+        <div className="flex items-center justify-center" style={{ height: '100%' }}>
+          <img 
+            src="/ahubLogo.png" 
+            alt="African Hub Logo" 
+            className="logo-image rounded-lg"
+            style={{
+              maxHeight: '72px',
+              maxWidth: '72px',
+              height: 'auto',
+              width: 'auto',
+              objectFit: 'contain'
+            }}
+          />
         </div>
     );
 };

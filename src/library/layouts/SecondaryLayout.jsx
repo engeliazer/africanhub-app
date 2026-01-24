@@ -1,31 +1,28 @@
-import { Logo, RedBar, YellowBar } from "../atoms";
+import { Logo } from "../atoms";
 import { Fragment, useState, useEffect, useMemo } from "react";
-import BrandName from "../atoms/BrandName.jsx";
-import { RenderBasedOnAuthState, AvatarWrapper, SupportButton, ProfileDrawer, Sidebar } from "../components";
-import { Layout, Button, Card, Divider, Select, message, Tooltip, Drawer } from "antd";
-import { MenuFoldOutlined, MenuUnfoldOutlined, FormOutlined } from "@ant-design/icons";
+import { RenderBasedOnAuthState, AvatarWrapper, ProfileDrawer, Sidebar } from "../components";
+import { Layout, Button, Card, Select, message, Tooltip, Drawer, Dropdown, Space, Badge } from "antd";
+import { MenuFoldOutlined, MenuUnfoldOutlined, FormOutlined, UserOutlined, LogoutOutlined, UserSwitchOutlined, AppstoreOutlined } from "@ant-design/icons";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { Breadcrumb } from "../molecules/index.js";
-import { UserOutlined } from "@ant-design/icons";
-import { Dropdown, Space } from "antd";
-import AuthenticatorLayout from "./Authenticator.jsx";
-import { useDispatch, useSelector, useStore } from "react-redux";
-import { setCurrentRole, selectCurrentRole, selectPermissions, selectAssignedRoles, setAssignedRoles } from "../../state/rbacSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { setCurrentRole, selectCurrentRole, selectPermissions, selectAssignedRoles } from "../../state/rbacSlice";
 import { menuConfig } from "../../config/menuConfig";
-import { rolePermissions } from "../../config/roleConfig";
 import { SECURITY_CONFIG } from "../../config";
+import { useTheme } from "../../contexts/ThemeContext";
 import Chat from "../../components/Chat";
 import AdminChat from '../../components/AdminChat';
 import authService from '../../services/auth';
 import { onClear } from "../../state/accessSlice";
 import useIdleTimeout from "../../hooks/useIdleTimeout";
+import ModuleSelectionModal from "../../components/ModuleSelectionModal";
 
 const SecondaryLayout = () => {
-  const { Header } = Layout;
+  const { colors } = useTheme();
+  const { Header, Content } = Layout;
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const store = useStore();
   const currentRole = useSelector(selectCurrentRole);
   const userPermissions = useSelector(selectPermissions);
   const assignedRoles = useSelector(selectAssignedRoles);
@@ -33,8 +30,32 @@ const SecondaryLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [selectedModule, setSelectedModule] = useState("applications");
+  
+  // Get selected module from localStorage or default to "user"
+  const getInitialModule = () => {
+    const stored = localStorage.getItem('selectedModule');
+    if (stored) return stored;
+    return 'user'; // Default to User Profile module
+  };
+  
+  const [selectedModule, setSelectedModule] = useState(getInitialModule());
+  const [moduleModalOpen, setModuleModalOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  
+  // Check if this is first login (no module selected yet)
+  useEffect(() => {
+    const storedModule = localStorage.getItem('selectedModule');
+    const hasShownModal = localStorage.getItem('moduleSelectionShown');
+    
+    // Show modal if no module is selected and modal hasn't been shown, or if flag was cleared (first login)
+    if (!storedModule && !hasShownModal) {
+      // Set default to "user" (User Profile) module
+      setSelectedModule('user');
+      localStorage.setItem('selectedModule', 'user');
+      setModuleModalOpen(true);
+      localStorage.setItem('moduleSelectionShown', 'true');
+    }
+  }, []);
 
   // Handle window resize for mobile detection
   useEffect(() => {
@@ -64,21 +85,16 @@ const SecondaryLayout = () => {
 
   // Get available modules based on user permissions
   const availableModules = useMemo(() => {
-    // Helper function to check if any menu item in a module is accessible
     const hasAccessibleItems = (items) => {
       return items.some(item => {
-        // Check if the item has roles and if the current role is allowed
         const hasRole = !item.roles || item.roles.length === 0 || item.roles.includes(currentRole);
-        
         const hasPermission = hasRequiredPermissions(item.permissions);
         
-        // For applications module, we always want to include it for certain roles
         if (item.module === 'applications' && 
             ['FACILITATOR', 'SYSADMIN', 'STUDENT'].includes(currentRole)) {
           return true;
         }
         
-        // For accounting module, we want to include it for certain roles
         if (item.module === 'accounting' && 
             ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER'].includes(currentRole)) {
           return true;
@@ -92,17 +108,18 @@ const SecondaryLayout = () => {
       });
     };
 
-    // Filter modules based on permissions
+    // Always include "user" (User Profile) module as it's accessible to all users
     const accessibleModules = [...new Set(menuConfig.map(item => item.module))]
       .filter(module => {
-        if (!module) return false; // Skip items without a module
+        if (!module) return false;
         
-        // Special case for applications module
+        // User module is always accessible
+        if (module === 'user') return true;
+        
         if (module === 'applications' && ['FACILITATOR', 'SYSADMIN', 'STUDENT'].includes(currentRole)) {
           return true;
         }
         
-        // Special case for accounting module
         if (module === 'accounting' && ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER'].includes(currentRole)) {
           return true;
         }
@@ -111,40 +128,43 @@ const SecondaryLayout = () => {
         return hasAccessibleItems(moduleItems);
       })
       .map(module => {
-        // Get the menu item for this module to access its label
         const menuItem = menuConfig.find(item => item.module === module);
         return {
           value: module,
           label: menuItem ? menuItem.label : (module.charAt(0).toUpperCase() + module.slice(1).replace(/-/g, ' '))
         };
       })
-      .filter(module => module.label) // Remove any empty labels
-      .sort((a, b) => a.label.localeCompare(b.label));
+      .filter(module => module.label);
 
-    // Log the available modules to check if applications is included
-    console.log("Available modules before adding applications:", accessibleModules);
-    
-    // Ensure Applications module is always included for all users
+    // Ensure "user" module is included and placed first
+    if (!accessibleModules.some(module => module.value === 'user')) {
+      accessibleModules.unshift({
+        value: 'user',
+        label: 'My Profile'
+      });
+    }
+
     if (!accessibleModules.some(module => module.value === 'applications') && 
         ['FACILITATOR', 'SYSADMIN', 'STUDENT'].includes(currentRole)) {
       accessibleModules.push({
         value: 'applications',
         label: 'Applications'
       });
-      console.log("Applications module added to available modules");
     }
     
-    // Ensure Accounting module is always included for accounting roles
     if (!accessibleModules.some(module => module.value === 'accounting') && 
         ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER'].includes(currentRole)) {
       accessibleModules.push({
         value: 'accounting',
         label: 'Accounting'
       });
-      console.log("Accounting module added to available modules");
     }
 
-    return accessibleModules;
+    // Sort modules but keep "user" first
+    const userModule = accessibleModules.find(m => m.value === 'user');
+    const otherModules = accessibleModules.filter(m => m.value !== 'user').sort((a, b) => a.label.localeCompare(b.label));
+    
+    return userModule ? [userModule, ...otherModules] : otherModules;
   }, [userPermissions, currentRole]);
 
   // Format roles for dropdown
@@ -155,61 +175,50 @@ const SecondaryLayout = () => {
     }));
   }, [assignedRoles]);
 
-  // Initialize selectedModule only once when component mounts
+  // Initialize selectedModule based on current path or default
   useEffect(() => {
-    // Only set default module on initial component mount
-    console.log("Initializing selected module");
-    
-    // For STUDENT role, always set module to applications
-    if (currentRole === 'STUDENT') {
-      setSelectedModule("applications");
-      // Only navigate to profile on initial load (when path is root)
-      if (location.pathname === '/') {
-        navigate('/user/profile');
-      }
+    const storedModule = localStorage.getItem('selectedModule');
+    if (storedModule && !moduleModalOpen) {
+      setSelectedModule(storedModule);
       return;
     }
     
-    // For other roles, determine module from path
+    // If no stored module, try to detect from path
     const path = window.location.pathname;
+    let moduleFromPath = "user"; // Default to user module
     
-    // Determine module from path
-    let moduleFromPath = "applications"; // Default
     for (const item of menuConfig) {
-      if (item.module && (item.path === path || path.startsWith(item.path + '/'))) {
-        moduleFromPath = item.module;
-        break;
-      } else if (item.children) {
+      if (item.children) {
         const matchingChild = item.children.find(child => 
           child.path === path || path.startsWith(child.path + '/')
         );
         if (matchingChild) {
-          moduleFromPath = item.module;
+          moduleFromPath = item.module || "user";
           break;
         }
       }
     }
     
-    setSelectedModule(moduleFromPath);
-  }, [currentRole, location.pathname, navigate]);
+    if (!storedModule) {
+      setSelectedModule(moduleFromPath);
+      localStorage.setItem('selectedModule', moduleFromPath);
+    }
+  }, [currentRole, location.pathname, navigate, moduleModalOpen]);
 
   const handleModuleChange = (newModule) => {
-    // For STUDENT role, prevent module change
-    if (currentRole === 'STUDENT') {
-      message.info('Students can only access the Applications module');
-      return;
-    }
-    
-    console.log(`Module changed to: ${newModule}`);
     setSelectedModule(newModule);
+    localStorage.setItem('selectedModule', newModule);
+    setModuleModalOpen(false);
     
-    // Navigate to the first page of the selected module
+    // Navigate to first accessible path in the selected module
     const moduleItems = menuConfig.filter(item => item.module === newModule);
     if (moduleItems.length > 0) {
-      // Find first accessible item in the module
       const findFirstAccessiblePath = (items) => {
         for (const item of items) {
-          if (hasRequiredPermissions(item.permissions)) {
+          const hasRole = !item.roles || item.roles.length === 0 || item.roles.includes(currentRole);
+          const hasPermission = hasRequiredPermissions(item.permissions);
+          
+          if (hasPermission && hasRole) {
             if (item.path) return item.path;
             if (item.children) {
               const childPath = findFirstAccessiblePath(item.children);
@@ -223,8 +232,18 @@ const SecondaryLayout = () => {
       const firstPath = findFirstAccessiblePath(moduleItems);
       if (firstPath) {
         navigate(firstPath);
+      } else {
+        // If no accessible path found, navigate to profile
+        navigate('/user/profile');
       }
+    } else {
+      // If no items in module, navigate to profile
+      navigate('/user/profile');
     }
+  };
+
+  const handleOpenModuleModal = () => {
+    setModuleModalOpen(true);
   };
 
   const handleRoleChange = (newRole) => {
@@ -238,187 +257,336 @@ const SecondaryLayout = () => {
   const onLogout = async () => {
     try {
       await authService.logout();
-      // Clear Redux state
       dispatch(onClear());
-      // Clear any other local storage items
       localStorage.removeItem('user_info');
-      // Redirect to login page
+      // Clear module selection information
+      localStorage.removeItem('selectedModule');
+      localStorage.removeItem('moduleSelectionShown');
       navigate('/login');
       message.success('Logged out successfully');
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if the API call fails, we should still clear local data and redirect
       dispatch(onClear());
       localStorage.removeItem('user_info');
+      // Clear module selection information even on error
+      localStorage.removeItem('selectedModule');
+      localStorage.removeItem('moduleSelectionShown');
       navigate('/login');
       message.error('Error during logout, but you have been logged out locally');
     }
   };
   
-  // Check if user is already on the profile page
   const isOnProfilePage = location.pathname === '/user/profile';
   
-  const items = [
+  const userMenuItems = [
     {
       key: '1',
       label: 'My Profile',
+      icon: <UserOutlined />,
       onClick: isOnProfilePage ? undefined : () => navigate('/user/profile'),
     },
     {
       key: '2',
       label: 'Logout',
+      icon: <LogoutOutlined />,
       onClick: onLogout,
+      danger: true,
     },
   ];
 
-  // Filter out the profile option if already on profile page
-  const filteredItems = isOnProfilePage 
-    ? items.filter(item => item.key !== '1') 
-    : items;
+  const filteredUserMenuItems = isOnProfilePage 
+    ? userMenuItems.filter(item => item.key !== '1') 
+    : userMenuItems;
 
   return (
-    <div className={"relative h-screen max-h-screen overflow-x-hidden bg-mainWhite"}>
-      <nav className="sticky top-0 left-0 right-0 z-50 flex-none flex-wrap items-center justify-between transition duration-500 dark:shadow-none dark:bg-transparent overflow-hidden">
-        <RedBar className="bg-brandRed">
-          <Fragment>
-            <div className="relative z-50 flex items-center space-x-3 justify-between">
-              <Logo />
-              <BrandName 
-                brand={isMobile ? "OCRC" : "ONLINE CPA REVIEW CLASSES MANAGEMENT SYSTEM"} 
-                companyName="OCRC" 
-                className="text-brandWhite hidden md:block" 
-              />
-            </div>
-            <div className="flex justify-between items-center space-x-2">
-              <RenderBasedOnAuthState authState={false} compNoAuth={<></>} compAuth={<AvatarWrapper />} />
-            </div>
-            <div className="flex items-center">
-              {/* Quick access button for Applications module */}
-              <Tooltip title="Applications">
-                <Button 
-                  type="text" 
-                  icon={<FormOutlined />} 
-                  onClick={() => {
-                    console.log("Quick access button clicked, setting module to applications");
-                    setSelectedModule("applications");
-                    navigate('/applications/my-applications');
-                  }}
-                  className={`text-brandWhite mr-2 ${selectedModule === 'applications' ? 'border border-brandWhite' : ''}`}
-                />
-              </Tooltip>
-              <Dropdown menu={{ items: filteredItems }} placement="bottomRight">
-                <Space className="cursor-pointer">
-                  <UserOutlined className="text-[25px]" />
-                </Space>
-              </Dropdown>
-            </div>
-          </Fragment>
-        </RedBar>
-        <YellowBar className="bg-brandGreen border-t-4 border-brandRed overflow-x-auto">
-          <Fragment>
-            <div className="flex justify-right text-base md:text-2xl text-brandWhite ml-1 md:ml-3 px-1 md:px-2 font-bold">
-              {currentRole === 'STUDENT' ? (
-                <div className="flex items-center">
-                  <span className="text-brandWhite mr-2 md:mr-4 text-sm md:text-base truncate">
-                    {userInfo.first_name} {userInfo.middle_name} {userInfo.last_name}
-                  </span>
-                </div>
-              ) : (
-                <>
-                  <Select
-                    value={selectedModule}
-                    onChange={handleModuleChange}
-                    options={availableModules}
-                    className="w-[120px] md:w-[200px] font-semibold text-brandWhite hover:text-brandYellow transition-colors"
-                    dropdownStyle={{ zIndex: 1000 }}
-                    popupClassName="custom-select-dropdown"
-                  />
-                  <Select
-                    value={currentRole}
-                    onChange={handleRoleChange}
-                    options={roles}
-                    loading={loading}
-                    className="w-[120px] md:w-[200px] font-extrabold text-brandWhite hover:text-brandYellow transition-colors mr-2 md:mr-4 ml-1 md:ml-2"
-                    dropdownStyle={{ zIndex: 1000 }}
-                    popupClassName="custom-select-dropdown"
-                    notFoundContent={roles.length === 0 ? "No roles available" : null}
-                  />
-                </>
-              )}
-            </div>
-          </Fragment>
-        </YellowBar>
-        <ProfileDrawer />
-      </nav>
-      <Layout hasSider
-        className={"bg-transparent h-screen w-full"}
-        style={{
-          height: "100vh",
-          padding: 0,
-        }} 
+    <div className="h-screen flex flex-col bg-background overflow-hidden">
+      {/* Modern Top Navigation Bar */}
+      <Header 
+        className="bg-card border-b border-border shadow-lg px-4 md:px-6 flex items-center justify-between z-50"
+        style={{ 
+          padding: '0 24px',
+          background: colors.card,
+          borderBottom: `1px solid ${colors.border}`,
+          height: '80px',
+          minHeight: '80px',
+          lineHeight: '80px'
+        }}
       >
-        {/* Desktop Sidebar - Hidden on mobile */}
+        {/* Left Section: Logo, Menu Toggle, Brand */}
+        <div className="flex items-center space-x-4 flex-1 min-w-0">
+          <Button
+            type="text"
+            icon={isMobile ? <MenuUnfoldOutlined /> : (collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
+            onClick={() => isMobile ? setMobileDrawerOpen(true) : setCollapsed(!collapsed)}
+            className="transition-colors"
+            style={{ 
+              fontSize: '18px',
+              width: 40,
+              height: 40,
+              color: colors.textPrimary
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.cardDepth;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          />
+          
+          <div className="flex items-center space-x-3 min-w-0" style={{ height: '100%' }}>
+            <div style={{ height: '72px', display: 'flex', alignItems: 'center' }}>
+              <Logo />
+            </div>
+            {!isMobile && !collapsed && (
+              <div className="flex flex-col min-w-0">
+                <span 
+                  className="text-xl font-bold leading-tight truncate max-w-[300px]"
+                  style={{ color: colors.textPrimary }}
+                >
+                  THE AFRICAN HUB
+                </span>
+                <span 
+                  className="text-xs font-medium"
+                  style={{ color: colors.textSecondary }}
+                >
+                  Building Accounting Skills for the Real World.
+                </span>
+              </div>
+            )}
+            {!isMobile && collapsed && (
+              <div className="flex flex-col items-center min-w-0">
+                <span 
+                  className="text-base font-bold leading-tight"
+                  style={{ color: colors.textPrimary }}
+                >
+                  TAH
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Center Section: Module Selector */}
+        <div className="flex items-center space-x-3 flex-1 justify-center hidden lg:flex">
+          <Button
+            type="text"
+            icon={<AppstoreOutlined />}
+            onClick={handleOpenModuleModal}
+            className="transition-colors"
+            style={{
+              fontSize: '14px',
+              fontWeight: 500,
+              color: colors.textPrimary
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = colors.cardDepth;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
+          >
+            {availableModules.find(m => m.value === selectedModule)?.label || 'Select Module'}
+          </Button>
+        </div>
+
+        {/* Right Section: Actions & User Menu */}
+        <div className="flex items-center space-x-3 flex-1 justify-end">
+          {/* Quick Access Button */}
+          {!isMobile && (
+            <Tooltip title="Quick Access: Applications">
+              <Button 
+                type="text" 
+                icon={<FormOutlined />} 
+                onClick={() => {
+                  setSelectedModule("applications");
+                  navigate('/applications/my-applications');
+                }}
+                className="transition-colors"
+                style={{
+                  color: selectedModule === 'applications' ? colors.primaryAccent : colors.textPrimary,
+                  backgroundColor: selectedModule === 'applications' ? colors.cardDepth : 'transparent'
+                }}
+                onMouseEnter={(e) => {
+                  if (selectedModule !== 'applications') {
+                    e.currentTarget.style.backgroundColor = colors.cardDepth;
+                    e.currentTarget.style.color = colors.primaryAccent;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (selectedModule !== 'applications') {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                    e.currentTarget.style.color = colors.textPrimary;
+                  }
+                }}
+              />
+            </Tooltip>
+          )}
+
+          {/* Mobile Module Selector */}
+          {isMobile && (
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={handleOpenModuleModal}
+              size="small"
+              className="transition-colors"
+              style={{ color: colors.textPrimary }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.cardDepth;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            />
+          )}
+
+          {/* User Name Display */}
+          <div 
+            className="hidden md:flex items-center px-3 py-1.5 rounded-lg"
+            style={{
+              background: colors.cardDepth,
+              border: `1px solid ${colors.border}`
+            }}
+          >
+            <span 
+              className="text-sm font-medium truncate max-w-[200px]"
+              style={{ color: colors.textPrimary }}
+            >
+              {userInfo.first_name} {userInfo.middle_name} {userInfo.last_name}
+            </span>
+          </div>
+
+          {/* Avatar & User Menu */}
+          <RenderBasedOnAuthState 
+            authState={false} 
+            compNoAuth={<></>} 
+            compAuth={<AvatarWrapper />} 
+          />
+          
+          <Dropdown 
+            menu={{ items: filteredUserMenuItems }} 
+            placement="bottomRight"
+            trigger={['click']}
+          >
+            <Button
+              type="text"
+              icon={<UserOutlined />}
+              className="transition-colors"
+              style={{ 
+                width: 40, 
+                height: 40,
+                color: colors.textPrimary
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.cardDepth;
+                e.currentTarget.style.color = colors.primaryAccent;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+                e.currentTarget.style.color = colors.textPrimary;
+              }}
+            />
+          </Dropdown>
+        </div>
+      </Header>
+
+      {/* Main Layout with Sidebar */}
+      <Layout className="flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
         {!isMobile && (
           <Sidebar 
             collapsed={collapsed} 
             selectedModule={selectedModule} 
+            onSwitchModule={handleOpenModuleModal}
+            currentRole={currentRole}
+            roles={roles}
+            onRoleChange={handleRoleChange}
+            loading={loading}
             key={`sidebar-${selectedModule}`} 
           />
         )}
 
         {/* Mobile Drawer Sidebar */}
         <Drawer
-          title="Menu"
+          title={
+            <div className="flex items-center space-x-2" style={{ height: '100%' }}>
+              <div style={{ height: '72px', display: 'flex', alignItems: 'center' }}>
+                <Logo />
+              </div>
+              <span 
+                className="font-semibold"
+                style={{ color: colors.textPrimary }}
+              >
+                Menu
+              </span>
+            </div>
+          }
           placement="left"
           onClose={() => setMobileDrawerOpen(false)}
           open={mobileDrawerOpen}
-          width={250}
-          styles={{ body: { padding: 0 } }}
+          width={280}
+          styles={{ 
+            body: { padding: 0, background: colors.card },
+            header: { background: colors.card, borderBottom: `1px solid ${colors.border}` }
+          }}
         >
           <Sidebar 
             collapsed={false}
             selectedModule={selectedModule} 
             isInDrawer={true}
+            onSwitchModule={handleOpenModuleModal}
+            currentRole={currentRole}
+            roles={roles}
+            onRoleChange={handleRoleChange}
+            loading={loading}
             key={`sidebar-mobile-${selectedModule}`}
           />
         </Drawer>
 
+        {/* Main Content Area */}
         <Layout 
           style={{ 
-            marginInlineStart: isMobile ? 0 : (collapsed ? 100 : 250),
-            backgroundColor: "transparent",
-            transition: "margin 0.2s"
+            marginLeft: isMobile ? 0 : (collapsed ? 80 : 250),
+            transition: 'margin-left 0.2s',
+            background: 'transparent'
           }} 
-          className={"pr-2"}
+          className="flex flex-col"
         >
-          <Header
-            className={"flex items-center space-x-2 bg-mainWhite sticky top-0 z-40"}
-            style={{ padding: 0 }}>
-            <Button
-              type="text"
-              icon={isMobile ? <MenuUnfoldOutlined /> : (collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />)}
-              onClick={() => isMobile ? setMobileDrawerOpen(true) : setCollapsed(!collapsed)}
-              style={{
-                fontSize: "16px",
-                width: 40,
-                height: 40, 
-              }}
-              className={"bg-white mt-[-8px] shadow-sm"}
-            />
-            <Breadcrumb />
-          </Header>
-          <Card
-            type={"inner"}
-            size={"small"}
-            className={isMobile ? "mx-2" : "ml-8"}
+          {/* Breadcrumb Bar */}
+          <div 
+            className="px-4 md:px-6 py-3"
+            style={{
+              background: colors.card,
+              borderBottom: `1px solid ${colors.border}`,
+            }}
           >
-            <Outlet />
-          </Card>
+            <Breadcrumb />
+          </div>
+
+          {/* Content */}
+          <Content 
+            className="flex-1 overflow-auto p-4 md:p-6"
+            style={{ background: colors.background }}
+          >
+            <div className="max-w-full">
+              <Outlet />
+            </div>
+          </Content>
         </Layout>
       </Layout>
 
       {/* Chat Component */}
       {isAdminOrSupport ? <AdminChat /> : <Chat />}
+      
+      <ProfileDrawer />
+      
+      {/* Module Selection Modal */}
+      <ModuleSelectionModal
+        open={moduleModalOpen}
+        onSelect={handleModuleChange}
+        availableModules={availableModules}
+        selectedModule={selectedModule}
+      />
     </div>
   );
 };

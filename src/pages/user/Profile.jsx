@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Card, Descriptions, Tag, Typography, Avatar, Table, Divider, Empty, Button, message } from 'antd';
-import { UserOutlined, SwapOutlined } from '@ant-design/icons';
+import { Card, Descriptions, Tag, Typography, Avatar, Table, Divider, Empty, Button, message, Space } from 'antd';
+import { UserOutlined, SwapOutlined, MailOutlined, PhoneOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectCurrentRole, selectAssignedRoles, setCurrentRole } from '../../state/rbacSlice';
 import { useNavigate } from 'react-router-dom';
 import UserRoles from './UserRoles';
+import { useTheme } from '../../contexts/ThemeContext';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 const Profile = () => {
+  const { colors } = useTheme();
   const currentRole = useSelector(selectCurrentRole);
   const assignedRoles = useSelector(selectAssignedRoles);
   const userInfo = JSON.parse(localStorage.getItem('user_info') || '{}');
@@ -17,18 +19,12 @@ const Profile = () => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
-    // Log incoming roles data
-    console.log('Assigned roles from Redux:', assignedRoles);
-    
     // Transform assignedRoles to include is_default flag
     const transformedRoles = assignedRoles.map(role => ({
       ...role,
-      id: role.code, // Using code as id since that's what we have
+      id: role.code,
       is_default: role.code === currentRole
     }));
-    
-    // Log transformed roles
-    console.log('Transformed roles:', transformedRoles);
     
     setRoles(transformedRoles);
   }, [currentRole, assignedRoles]);
@@ -41,93 +37,216 @@ const Profile = () => {
   };
 
   const handleRolesUpdate = () => {
-    // Refresh the page to get updated roles
     window.location.reload();
   };
 
+  const fullName = `${userInfo.first_name || ''} ${userInfo.middle_name || ''} ${userInfo.last_name || ''}`.trim() || userInfo.name || 'User';
+
   return (
-    <div className="p-6">
-      <Card>
-        <div className="flex items-center mb-6">
-          <Avatar size={64} icon={<UserOutlined />} className="mr-4" />
-          <div>
-            <Title level={3} className="m-0">{userInfo.name || 'User'}</Title>
-            {currentRole && <Tag color="blue">{currentRole}</Tag>}
+    <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+      {/* Profile Header Card */}
+      <Card
+        style={{
+          background: `linear-gradient(135deg, ${colors.border} 0%, ${colors.card} 100%)`,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '16px',
+          marginBottom: '24px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}
+        bodyStyle={{ padding: '32px' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '32px' }}>
+          <Avatar 
+            size={96} 
+            icon={<UserOutlined />} 
+            style={{
+              background: `linear-gradient(135deg, ${colors.cardDepth} 0%, ${colors.border} 100%)`,
+              border: `4px solid ${colors.border}`,
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
+              marginRight: '24px'
+            }}
+          />
+          <div style={{ flex: 1 }}>
+            <Title level={2} style={{ color: colors.textPrimary, margin: 0, marginBottom: '8px', fontWeight: 600 }}>
+              {fullName}
+            </Title>
+            <Space wrap style={{ marginTop: '8px' }}>
+              {currentRole && (
+                <Tag 
+                  style={{
+                    background: colors.primaryAccent,
+                    color: colors.background,
+                    border: 'none',
+                    padding: '4px 12px',
+                    borderRadius: '6px',
+                    fontWeight: 500,
+                    fontSize: '13px'
+                  }}
+                >
+                  <CheckCircleOutlined style={{ marginRight: '4px' }} />
+                  {assignedRoles.find(r => r.code === currentRole)?.name || currentRole}
+                </Tag>
+              )}
+              <Tag 
+                style={{
+                  background: userInfo.status === 'ACTIVE' ? colors.primaryAccent : colors.red,
+                  color: userInfo.status === 'ACTIVE' ? colors.background : colors.textPrimary,
+                  border: 'none',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  fontWeight: 500,
+                  fontSize: '13px'
+                }}
+              >
+                {userInfo.status || 'UNKNOWN'}
+              </Tag>
+            </Space>
           </div>
         </div>
 
-        <Descriptions bordered column={2}>
-          <Descriptions.Item label="Email" span={2}>
-            {userInfo.email || 'N/A'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Phone" span={2}>
-            {userInfo.phone || 'N/A'}
-          </Descriptions.Item>
-          <Descriptions.Item label="Status" span={2}>
-            <Tag color={userInfo.status === 'ACTIVE' ? 'green' : 'red'}>
-              {userInfo.status || 'UNKNOWN'}
-            </Tag>
-          </Descriptions.Item>
-          <Descriptions.Item label="Assigned Roles" span={2}>
-            {assignedRoles.length > 0 ? (
-              assignedRoles.map(role => (
-                <Tag key={role.code} color={role.code === currentRole ? 'blue' : 'default'}>
-                  {role.name}
-                </Tag>
-              ))
-            ) : (
-              <span>No roles assigned</span>
-            )}
-          </Descriptions.Item>
-        </Descriptions>
+        {/* Contact Information */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
+          gap: '20px',
+          marginTop: '24px'
+        }}>
+          <div style={{
+            background: colors.cardDepth,
+            padding: '16px 20px',
+            borderRadius: '12px',
+            border: `1px solid ${colors.border}`
+          }}>
+            <Space>
+              <MailOutlined style={{ color: colors.textMuted, fontSize: '18px' }} />
+              <div>
+                <Text style={{ color: colors.textMuted, fontSize: '12px', display: 'block', marginBottom: '4px' }}>Email</Text>
+                <Text style={{ color: colors.textPrimary, fontSize: '14px', fontWeight: 500 }}>
+                  {userInfo.email || 'N/A'}
+                </Text>
+              </div>
+            </Space>
+          </div>
+          <div style={{
+            background: colors.cardDepth,
+            padding: '16px 20px',
+            borderRadius: '12px',
+            border: `1px solid ${colors.border}`
+          }}>
+            <Space>
+              <PhoneOutlined style={{ color: colors.textMuted, fontSize: '18px' }} />
+              <div>
+                <Text style={{ color: colors.textMuted, fontSize: '12px', display: 'block', marginBottom: '4px' }}>Phone</Text>
+                <Text style={{ color: colors.textPrimary, fontSize: '14px', fontWeight: 500 }}>
+                  {userInfo.phone || 'N/A'}
+                </Text>
+              </div>
+            </Space>
+          </div>
+        </div>
+      </Card>
 
-        <Divider />
+      {/* Assigned Roles Section */}
+      <Card
+        style={{
+          background: colors.card,
+          border: `1px solid ${colors.border}`,
+          borderRadius: '16px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)'
+        }}
+        bodyStyle={{ padding: '24px' }}
+      >
+        <Title level={4} style={{ color: colors.textPrimary, marginBottom: '24px', fontWeight: 600 }}>
+          Your Roles
+        </Title>
         
-        <Title level={5}>Your Roles</Title>
         {assignedRoles.length > 0 ? (
-          <Table
-            dataSource={assignedRoles}
-            columns={[
-              {
-                title: 'Role Name',
-                dataIndex: 'name',
-                key: 'name',
-              },
-              {
-                title: 'Code',
-                dataIndex: 'code',
-                key: 'code',
-              },
-              {
-                title: 'Status',
-                key: 'status',
-                render: (_, record) => (
-                  <Tag color={record.code === currentRole ? 'blue' : 'default'}>
-                    {record.code === currentRole ? 'Current' : 'Available'}
-                  </Tag>
-                ),
-              },
-              {
-                title: 'Actions',
-                key: 'actions',
-                render: (_, record) => (
-                  record.code !== currentRole && (
-                    <Button
-                      icon={<SwapOutlined />}
-                      onClick={() => handleRoleSwitch(record.code)}
-                    >
-                      Switch to this role
-                    </Button>
+          <div style={{ background: colors.cardDepth, borderRadius: '12px', overflow: 'hidden', border: `1px solid ${colors.border}` }}>
+            <Table
+              dataSource={assignedRoles}
+              columns={[
+                {
+                  title: 'Role Name',
+                  dataIndex: 'name',
+                  key: 'name',
+                  render: (text, record) => (
+                    <Text style={{ color: colors.textPrimary, fontWeight: record.code === currentRole ? 600 : 400 }}>
+                      {text}
+                    </Text>
                   )
-                ),
-              },
-            ]}
-            rowKey="code"
-            pagination={false}
-            size="small"
-          />
+                },
+                {
+                  title: 'Code',
+                  dataIndex: 'code',
+                  key: 'code',
+                  render: (text) => (
+                    <Text style={{ color: colors.textMuted, fontFamily: 'monospace' }}>{text}</Text>
+                  )
+                },
+                {
+                  title: 'Status',
+                  key: 'status',
+                  render: (_, record) => (
+                    <Tag 
+                      style={{
+                        background: record.code === currentRole ? colors.primaryAccent : colors.border,
+                        color: record.code === currentRole ? colors.background : colors.textSecondary,
+                        border: record.code === currentRole ? 'none' : `1px solid ${colors.border}`,
+                        padding: '4px 12px',
+                        borderRadius: '6px',
+                        fontWeight: 500
+                      }}
+                    >
+                      {record.code === currentRole ? 'Current' : 'Available'}
+                    </Tag>
+                  ),
+                },
+                {
+                  title: 'Actions',
+                  key: 'actions',
+                  render: (_, record) => (
+                    record.code !== currentRole ? (
+                      <Button
+                        type="text"
+                        icon={<SwapOutlined />}
+                        onClick={() => handleRoleSwitch(record.code)}
+                        style={{
+                          color: colors.textPrimary,
+                          border: `1px solid ${colors.cardDepth}`,
+                          borderRadius: '6px',
+                          fontWeight: 500,
+                          background: colors.border
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = colors.cardDepth;
+                          e.currentTarget.style.borderColor = colors.cardDepth;
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = colors.border;
+                          e.currentTarget.style.borderColor = colors.cardDepth;
+                        }}
+                      >
+                        Switch Role
+                      </Button>
+                    ) : (
+                      <Text style={{ color: colors.textMuted }}>-</Text>
+                    )
+                  ),
+                },
+              ]}
+              rowKey="code"
+              pagination={false}
+              style={{
+                background: 'transparent'
+              }}
+              className="profile-roles-table"
+            />
+          </div>
         ) : (
-          <Empty description="No roles assigned" />
+          <Empty 
+            description={<Text style={{ color: colors.textMuted }}>No roles assigned</Text>}
+            style={{ padding: '40px 0' }}
+          />
         )}
       </Card>
     </div>

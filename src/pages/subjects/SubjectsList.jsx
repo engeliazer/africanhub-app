@@ -1,31 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Modal, Form, Input, Switch, Space, message, Select, Tabs, Popconfirm } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, FilterOutlined, QuestionCircleOutlined } from '@ant-design/icons';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Card, Table, Button, Modal, Form, Input, Switch, Space, message, Tabs, Popconfirm } from 'antd';
+import { PlusOutlined, EditOutlined, DeleteOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import subjectsService from '../../services/subjects';
 import topicsService from '../../services/topics';
 import subtopicsService from '../../services/subtopics';
-import coursesService from '../../services/courses';
 
 const SubjectsList = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
-  
-  // Parse query parameters
-  const queryParams = new URLSearchParams(location.search);
-  const courseIdFromQuery = queryParams.get('courseId');
-  const courseNameFromQuery = queryParams.get('courseName');
   
   const [subjects, setSubjects] = useState([]);
-  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingSubject, setEditingSubject] = useState(null);
-  const [form] = Form.useForm();
   const [activeTab, setActiveTab] = useState('1');
   const [currentSubject, setCurrentSubject] = useState(null);
   const [currentTopic, setCurrentTopic] = useState(null);
-  const [selectedCourseId, setSelectedCourseId] = useState(courseIdFromQuery ? parseInt(courseIdFromQuery, 10) : null);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
@@ -43,23 +31,12 @@ const SubjectsList = () => {
     subtopic: null
   });
 
-  // Fetch courses
-  const fetchCourses = async () => {
-    try {
-      const response = await coursesService.getCourses();
-      setCourses(response || []);
-    } catch (error) {
-      console.error('Error fetching courses:', error);
-      message.error('Failed to fetch courses');
-    }
-  };
-
   // Fetch subjects
-  const fetchSubjects = async (page = 1, perPage = 10, courseIdParam = selectedCourseId) => {
+  const fetchSubjects = async (page = 1, perPage = 10) => {
     setLoading(true);
     try {
-      console.log('Fetching subjects with course filter:', courseIdParam);
-      const response = await subjectsService.getSubjects(page, perPage, courseIdParam);
+      console.log('Fetching subjects - page:', page, 'perPage:', perPage);
+      const response = await subjectsService.getSubjects(page, perPage);
       console.log('API response:', response);
       
       // Ensure we have an array of subjects
@@ -80,11 +57,6 @@ const SubjectsList = () => {
         }
       }
       
-      // Apply client-side filtering if a course is selected and the API doesn't filter correctly
-      if (courseIdParam && subjectsData.some(subject => subject.course_id !== courseIdParam)) {
-        console.log('Applying client-side filtering for course_id:', courseIdParam);
-        subjectsData = subjectsData.filter(subject => subject.course_id === courseIdParam);
-      }
       
       setSubjects(subjectsData);
       setPagination({
@@ -102,68 +74,10 @@ const SubjectsList = () => {
 
   useEffect(() => {
     fetchSubjects(pagination.current, pagination.pageSize);
-    fetchCourses();
-    
-    // If courseId is provided in the URL, automatically open the add subject modal
-    if (courseIdFromQuery) {
-      // Wait a bit for courses to load
-      setTimeout(() => {
-        showModalWithPreselectedCourse(parseInt(courseIdFromQuery, 10));
-      }, 500);
-      
-      // Clear the URL parameters after handling them
-      navigate('/subjects', { replace: true });
-    }
   }, []);
 
   const handleTableChange = (pagination) => {
     fetchSubjects(pagination.current, pagination.pageSize);
-  };
-
-  const handleCourseFilterChange = (courseId) => {
-    console.log('Filter changed to course ID:', courseId);
-    setSelectedCourseId(courseId);
-    setPagination({
-      ...pagination,
-      current: 1 // Reset to first page when filter changes
-    });
-    // Immediately fetch subjects with the new filter
-    fetchSubjects(1, pagination.pageSize, courseId);
-  };
-
-  const handleClearFilter = () => {
-    console.log('Filter cleared');
-    setSelectedCourseId(null);
-    setPagination({
-      ...pagination,
-      current: 1 // Reset to first page when filter is cleared
-    });
-    // Immediately fetch all subjects when filter is cleared
-    fetchSubjects(1, pagination.pageSize, null);
-  };
-
-  const showModalWithPreselectedCourse = (courseId) => {
-    setEditingSubject(null);
-    setCurrentSubject(null);
-    setCurrentTopic(null);
-    setActiveTab('1');
-    
-    subjectForm.resetFields();
-    topicForm.resetFields();
-    subtopicForm.resetFields();
-    
-    // Pre-select the course
-    subjectForm.setFieldsValue({
-      course_id: courseId,
-      is_active: true
-    });
-    
-    setIsModalVisible(true);
-    
-    // Show a message indicating which course is pre-selected
-    if (courseNameFromQuery) {
-      message.info(`Adding a new subject for course: ${courseNameFromQuery}`);
-    }
   };
 
   const showModal = (subject = null) => {
@@ -174,10 +88,12 @@ const SubjectsList = () => {
     
     if (subject) {
       subjectForm.setFieldsValue({
-        course_id: subject.course_id,
         name: subject.name,
         code: subject.code,
         description: subject.description,
+        current_price: subject.current_price,
+        duration_days: subject.duration_days,
+        trial_duration_days: subject.trial_duration_days,
         is_active: subject.is_active
       });
     } else {
@@ -236,7 +152,13 @@ const SubjectsList = () => {
         setLoading(true);
         
         await subjectsService.updateSubject(editingSubject.id, {
-          ...subjectValues,
+          name: subjectValues.name,
+          code: subjectValues.code,
+          description: subjectValues.description,
+          current_price: subjectValues.current_price,
+          duration_days: subjectValues.duration_days,
+          trial_duration_days: subjectValues.trial_duration_days,
+          is_active: subjectValues.is_active,
           updated_by: 1
         });
         
@@ -258,9 +180,10 @@ const SubjectsList = () => {
         subject: {
           name: subjectValues.name,
           description: subjectValues.description,
-          course_id: subjectValues.course_id,
           code: subjectValues.code,
           current_price: subjectValues.current_price,
+          duration_days: subjectValues.duration_days,
+          trial_duration_days: subjectValues.trial_duration_days,
           is_active: subjectValues.is_active,
           created_by: 1,
           updated_by: 1
@@ -326,23 +249,6 @@ const SubjectsList = () => {
       sortDirections: ['ascend', 'descend'],
     },
     {
-      title: 'Course',
-      dataIndex: 'course',
-      key: 'course',
-      render: (_, record) => {
-        const course = courses.find(c => c.id === record.course_id);
-        return course ? course.name : '-';
-      },
-      sorter: (a, b) => {
-        const courseA = courses.find(c => c.id === a.course_id);
-        const courseB = courses.find(c => c.id === b.course_id);
-        const nameA = courseA ? courseA.name : '';
-        const nameB = courseB ? courseB.name : '';
-        return nameA.localeCompare(nameB);
-      },
-      sortDirections: ['ascend', 'descend'],
-    },
-    {
       title: 'Description',
       dataIndex: 'description',
       key: 'description',
@@ -362,6 +268,26 @@ const SubjectsList = () => {
         <span>{price ? `TZS ${price.toLocaleString()}` : '-'}</span>
       ),
       sorter: (a, b) => (a.current_price || 0) - (b.current_price || 0),
+      sortDirections: ['ascend', 'descend'],
+    },
+    {
+      title: 'Duration (Days)',
+      dataIndex: 'duration_days',
+      key: 'duration_days',
+      render: (days) => (
+        <span>{days ? `${days} days` : '-'}</span>
+      ),
+      sorter: (a, b) => (a.duration_days || 0) - (b.duration_days || 0),
+      sortDirections: ['ascend', 'descend'],
+    },
+    {
+      title: 'Trial Duration (Days)',
+      dataIndex: 'trial_duration_days',
+      key: 'trial_duration_days',
+      render: (days) => (
+        <span>{days ? `${days} days` : '-'}</span>
+      ),
+      sorter: (a, b) => (a.trial_duration_days || 0) - (b.trial_duration_days || 0),
       sortDirections: ['ascend', 'descend'],
     },
     {
@@ -415,19 +341,6 @@ const SubjectsList = () => {
       children: (
         <Form form={subjectForm} layout="vertical">
           <Form.Item
-            name="course_id"
-            label="Course"
-            rules={[{ required: true, message: 'Please select a course' }]}
-          >
-            <Select
-              placeholder="Select a course"
-              options={courses.map(course => ({
-                value: course.id,
-                label: course.name
-              }))}
-            />
-          </Form.Item>
-          <Form.Item
             name="name"
             label="Name"
             rules={[{ required: true, message: 'Please enter subject name' }]}
@@ -447,6 +360,20 @@ const SubjectsList = () => {
             rules={[{ required: true, message: 'Please enter current price' }]}
           >
             <Input type="number" min={0} />
+          </Form.Item>
+          <Form.Item
+            name="duration_days"
+            label="Duration (Days)"
+            rules={[{ required: true, message: 'Please enter duration in days' }]}
+          >
+            <Input type="number" min={1} placeholder="e.g., 90" />
+          </Form.Item>
+          <Form.Item
+            name="trial_duration_days"
+            label="Trial Duration (Days)"
+            rules={[{ required: true, message: 'Please enter trial duration in days' }]}
+          >
+            <Input type="number" min={0} placeholder="e.g., 7" />
           </Form.Item>
           <Form.Item
             name="description"
@@ -571,19 +498,6 @@ const SubjectsList = () => {
           children: (
             <Form form={subjectForm} layout="vertical">
               <Form.Item
-                name="course_id"
-                label="Course"
-                rules={[{ required: true, message: 'Please select a course' }]}
-              >
-                <Select
-                  placeholder="Select a course"
-                  options={courses.map(course => ({
-                    value: course.id,
-                    label: course.name
-                  }))}
-                />
-              </Form.Item>
-              <Form.Item
                 name="name"
                 label="Name"
                 rules={[{ required: true, message: 'Please enter subject name' }]}
@@ -603,6 +517,20 @@ const SubjectsList = () => {
                 rules={[{ required: true, message: 'Please enter current price' }]}
               >
                 <Input type="number" min={0} />
+              </Form.Item>
+              <Form.Item
+                name="duration_days"
+                label="Duration (Days)"
+                rules={[{ required: true, message: 'Please enter duration in days' }]}
+              >
+                <Input type="number" min={1} placeholder="e.g., 90" />
+              </Form.Item>
+              <Form.Item
+                name="trial_duration_days"
+                label="Trial Duration (Days)"
+                rules={[{ required: true, message: 'Please enter trial duration in days' }]}
+              >
+                <Input type="number" min={0} placeholder="e.g., 7" />
               </Form.Item>
               <Form.Item
                 name="description"
@@ -636,22 +564,7 @@ const SubjectsList = () => {
   return (
     <div className="p-6">
       <Card title="Subjects">
-        <div className="mb-4 flex justify-between">
-          <div className="flex items-center">
-            <span className="mr-2">Filter by Course:</span>
-            <Select
-              placeholder="Select Course"
-              allowClear
-              style={{ width: 200 }}
-              onChange={handleCourseFilterChange}
-              onClear={handleClearFilter}
-              value={selectedCourseId}
-              options={courses.map(course => ({
-                value: course.id,
-                label: course.name
-              }))}
-            />
-          </div>
+        <div className="mb-4 flex justify-end">
           <Button
             type="primary"
             icon={<PlusOutlined />}

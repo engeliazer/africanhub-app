@@ -12,32 +12,72 @@ import "react-toastify/dist/ReactToastify.css";
 import "@mantine/charts/styles.css";
 import "@mantine/core/styles.css";
 import {MantineProvider} from "@mantine/core";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext.jsx";
+
 const queryClient = new QueryClient();
+
+// Component to apply Ant Design theme based on current theme
+const ThemedConfigProvider = ({ children }) => {
+  const { colors } = useTheme();
+  
+  return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimaryHover: colors.primary,
+          colorPrimaryActive: colors.primary,
+          colorPrimary: colors.primary,
+          colorBgBase: colors.background,
+          colorBgContainer: colors.card,
+          colorText: colors.textPrimary,
+          colorTextSecondary: colors.textSecondary,
+          colorBorder: colors.border,
+          colorBorderSecondary: colors.border,
+        },
+        components: {
+          Menu: {
+            itemActiveBg: colors.border,
+            itemSelectedBg: colors.border,
+            itemSelectedColor: colors.textPrimary,
+            itemHoverBg: colors.cardDepth,
+            colorBgContainer: colors.card,
+            colorText: colors.textPrimary,
+            colorTextSecondary: colors.textSecondary,
+          },
+          Card: {
+            colorBgContainer: colors.card,
+            colorText: colors.textPrimary,
+            colorTextHeading: colors.textPrimary,
+            colorBorderSecondary: colors.border,
+          },
+          Layout: {
+            colorBgBody: colors.background,
+            colorBgContainer: colors.background,
+            colorBgHeader: colors.card,
+          },
+          Button: {
+            colorBgContainer: colors.card,
+            colorText: colors.textPrimary,
+          }
+        }
+      }}
+    >
+      {children}
+    </ConfigProvider>
+  );
+};
 
 createRoot(document.getElementById("root")).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <Provider store={store}>
-                <ConfigProvider
-                    theme={{
-                        token: {
-                            colorPrimaryHover: "#277186",
-                            colorPrimaryActive: "#277186",
-                            colorPrimary: "#277186"
-                        },
-                        components: {
-                            Menu: {
-                                itemActiveBg: "#277186",
-                                itemSelectedBg: "#277186",
-                                itemSelectedColor: "#efefef",
-                            }
-                        }
-                    }}
-                >
-                    <MantineProvider>
-                        <App />
-                    </MantineProvider>
-                </ConfigProvider>
+                <ThemeProvider>
+                    <ThemedConfigProvider>
+                        <MantineProvider>
+                            <App />
+                        </MantineProvider>
+                    </ThemedConfigProvider>
+                </ThemeProvider>
             </Provider>
         </QueryClientProvider>
         <ToastContainer

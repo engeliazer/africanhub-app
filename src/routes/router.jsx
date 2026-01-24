@@ -13,20 +13,14 @@ import UserRoles from '../pages/settings/UserRoles';
 import CompanySettings from '../pages/settings/CompanySettings';
 import UserSettings from '../pages/settings/UserSettings';
 import UsersList from '../pages/users/UsersList';
-import SeasonSubjectsList from '../pages/seasons/SeasonSubjectsList';
-import SeasonsList from '../pages/subjects/SeasonsList';
 import SubjectsList from '../pages/subjects/SubjectsList';
 import TopicsList from '../pages/subjects/TopicsList';
 import SubtopicsList from '../pages/subjects/SubtopicsList';
 import ProtectedRoute from "../components/ProtectedRoute";
-import SeasonApplicants from '../pages/seasons/SeasonApplicants';
-import StudyMaterialCategoriesList from '../pages/studies/StudyMaterialCategoriesList';
-import SubtopicMaterialsList from '../pages/studies/SubtopicMaterialsList';
-import CoursesList from '../pages/courses/CoursesList';
+import StudyMaterials from '../pages/studies/StudyMaterials';
 import InstructorsList from '../pages/instructors/InstructorsList';
 import TestimonialsList from '../pages/testimonials/TestimonialsList';
 import AdminTestimonialsList from '../pages/testimonials/AdminTestimonialsList';
-import Application from "../pages/Application";
 import ChatManagement from '../pages/support/ChatManagement';
 import User from '../pages/support/User';
 import PendingPayments from '../pages/accounting/PendingPayments';
@@ -174,10 +168,6 @@ export const router = [
     ),
     children: [
       {
-        path: "seasons",
-        element: <SeasonSubjectsList />
-      },
-      {
         path: "list",
         element: <SubjectsList />
       },
@@ -188,36 +178,6 @@ export const router = [
       {
         path: "subtopics",
         element: <SubtopicsList />
-      },
-      {
-        path: "season-subjects",
-        element: <SeasonSubjectsList />
-      },
-      {
-        path: "season-applicants",
-        element: <SeasonApplicants />
-      }
-    ]
-  },
-  {
-    path: "seasons",
-    element: (
-      <ProtectedRoute permissions={['facilitation.view']}>
-        <SecondaryLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        index: true,
-        element: <SeasonsList />
-      },
-      {
-        path: "subjects",
-        element: <SeasonSubjectsList />
-      },
-      {
-        path: "applicants",
-        element: <SeasonApplicants />
       }
     ]
   },
@@ -230,12 +190,8 @@ export const router = [
     ),
     children: [
       {
-        path: "categories",
-        element: <StudyMaterialCategoriesList />
-      },
-      {
-        path: "subtopic-materials",
-        element: <SubtopicMaterialsList />
+        index: true,
+        element: <StudyMaterials />
       }
     ]
   },
@@ -267,24 +223,6 @@ export const router = [
           }
         ]
       },
-  {
-    path: "courses",
-    element: (
-      <ProtectedRoute permissions={['facilitation.view']}>
-        <SecondaryLayout />
-      </ProtectedRoute>
-    ),
-    children: [
-      {
-        path: "list",
-        element: <CoursesList />
-      },
-      {
-        path: "applications",
-        element: <Application />
-      }
-    ]
-  },
   {
     path: "applications",
     element: (

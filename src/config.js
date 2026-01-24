@@ -1,5 +1,5 @@
 // API Configuration - Force HTTPS
-export const BASE_URL = 'https://api.online.dcrc.ac.tz';
+export const BASE_URL = 'https://africanhub-api.africanhub.ac.tz';
 export const API_URL = `${BASE_URL}/api`;
 
 // Debug logging
