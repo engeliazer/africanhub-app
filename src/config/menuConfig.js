@@ -20,7 +20,9 @@ import {
   HistoryOutlined,
   CalendarOutlined,
   MessageOutlined,
+  MailOutlined,
   AccountBookOutlined,
+  BankOutlined,
   ClockCircleOutlined,
   ReconciliationOutlined,
   StarOutlined,
@@ -221,6 +223,22 @@ export const menuConfig = [
         roles: ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER']
       },
       {
+        key: 'bank-details',
+        label: 'Bank Details',
+        path: '/accounting/bank-details',
+        icon: BankOutlined,
+        permissions: ['VIEW_ACCOUNTING'],
+        roles: ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER']
+      },
+      {
+        key: 'sms-service',
+        label: 'SMS Service',
+        path: '/accounting/sms-service',
+        icon: MessageOutlined,
+        permissions: ['VIEW_ACCOUNTING'],
+        roles: ['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER']
+      },
+      {
         key: 'reports',
         label: 'Reports',
         path: '/accounting/reports',
@@ -267,6 +285,14 @@ export const menuConfig = [
         icon: MessageOutlined,
         permissions: ['settings.manage'],
         roles: ['SYSADMIN', 'SUPPORT']
+      },
+      {
+        key: 'mail-service',
+        label: 'Mail Service',
+        path: '/support/mail-service',
+        icon: MailOutlined,
+        permissions: ['settings.manage'],
+        roles: ['SYSADMIN']
       }
     ]
   }

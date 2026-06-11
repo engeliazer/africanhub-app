@@ -44,6 +44,11 @@ const SecondaryLayout = () => {
   
   // Check if this is first login (no module selected yet)
   useEffect(() => {
+    if (currentRole === 'STUDENT') {
+      setSelectedModule('applications');
+      localStorage.setItem('selectedModule', 'applications');
+      return;
+    }
     const storedModule = localStorage.getItem('selectedModule');
     const hasShownModal = localStorage.getItem('moduleSelectionShown');
     
@@ -55,7 +60,7 @@ const SecondaryLayout = () => {
       setModuleModalOpen(true);
       localStorage.setItem('moduleSelectionShown', 'true');
     }
-  }, []);
+  }, [currentRole]);
 
   // Handle window resize for mobile detection
   useEffect(() => {
@@ -72,9 +77,18 @@ const SecondaryLayout = () => {
   }, [mobileDrawerOpen]);
 
   const isAdminOrSupport = currentRole === 'SYSADMIN' || currentRole === 'SUPPORT';
+  const isStudent = currentRole === 'STUDENT';
 
   // Initialize idle timeout for security
   useIdleTimeout(SECURITY_CONFIG.idleTimeout);
+
+  // STUDENT: lock to Applications module only; no module/role switching
+  useEffect(() => {
+    if (!isStudent) return;
+    setSelectedModule('applications');
+    localStorage.setItem('selectedModule', 'applications');
+    setModuleModalOpen(false);
+  }, [isStudent]);
 
   // Check if user has any permissions for a menu item
   const hasRequiredPermissions = (permissions) => {
@@ -177,6 +191,11 @@ const SecondaryLayout = () => {
 
   // Initialize selectedModule based on current path or default
   useEffect(() => {
+    if (currentRole === 'STUDENT') {
+      setSelectedModule('applications');
+      localStorage.setItem('selectedModule', 'applications');
+      return;
+    }
     const storedModule = localStorage.getItem('selectedModule');
     if (storedModule && !moduleModalOpen) {
       setSelectedModule(storedModule);
@@ -243,6 +262,7 @@ const SecondaryLayout = () => {
   };
 
   const handleOpenModuleModal = () => {
+    if (currentRole === 'STUDENT') return;
     setModuleModalOpen(true);
   };
 
@@ -366,33 +386,35 @@ const SecondaryLayout = () => {
           </div>
         </div>
 
-        {/* Center Section: Module Selector */}
-        <div className="flex items-center space-x-3 flex-1 justify-center hidden lg:flex">
-          <Button
-            type="text"
-            icon={<AppstoreOutlined />}
-            onClick={handleOpenModuleModal}
-            className="transition-colors"
-            style={{
-              fontSize: '14px',
-              fontWeight: 500,
-              color: colors.textPrimary
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = colors.cardDepth;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = 'transparent';
-            }}
-          >
-            {availableModules.find(m => m.value === selectedModule)?.label || 'Select Module'}
-          </Button>
-        </div>
+        {/* Center Section: Module Selector (hidden for STUDENT) */}
+        {!isStudent && (
+          <div className="flex items-center space-x-3 flex-1 justify-center hidden lg:flex">
+            <Button
+              type="text"
+              icon={<AppstoreOutlined />}
+              onClick={handleOpenModuleModal}
+              className="transition-colors"
+              style={{
+                fontSize: '14px',
+                fontWeight: 500,
+                color: colors.textPrimary
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = colors.cardDepth;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+            >
+              {availableModules.find(m => m.value === selectedModule)?.label || 'Select Module'}
+            </Button>
+          </div>
+        )}
 
         {/* Right Section: Actions & User Menu */}
         <div className="flex items-center space-x-3 flex-1 justify-end">
-          {/* Quick Access Button */}
-          {!isMobile && (
+          {/* Quick Access Button (hidden for STUDENT - locked to Applications) */}
+          {!isMobile && !isStudent && (
             <Tooltip title="Quick Access: Applications">
               <Button 
                 type="text" 
@@ -422,8 +444,8 @@ const SecondaryLayout = () => {
             </Tooltip>
           )}
 
-          {/* Mobile Module Selector */}
-          {isMobile && (
+          {/* Mobile Module Selector (hidden for STUDENT) */}
+          {isMobile && !isStudent && (
             <Button
               type="text"
               icon={<AppstoreOutlined />}

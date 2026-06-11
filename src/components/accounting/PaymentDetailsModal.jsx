@@ -72,6 +72,11 @@ const PaymentDetailsModal = ({
 
   // Group subjects by course
   const subjectsByCourse = payment?.application?.subjects?.reduce((acc, subject) => {
+    // Skip subjects without course information
+    if (!subject.course || !subject.course.id) {
+      return acc;
+    }
+
     const courseId = subject.course.id;
     if (!acc[courseId]) {
       acc[courseId] = {

@@ -16,6 +16,7 @@ const User = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searchText, setSearchText] = useState('');
+  const [tablePagination, setTablePagination] = useState({ current: 1, pageSize: 10 });
   const [selectedUser, setSelectedUser] = useState(null);
   const [isProfileDrawerVisible, setIsProfileDrawerVisible] = useState(false);
   const [userDevices, setUserDevices] = useState([]);
@@ -27,6 +28,11 @@ const User = () => {
   useEffect(() => {
     fetchUsers();
   }, []);
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setTablePagination((p) => ({ ...p, current: 1 }));
+  }, [searchText]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -226,6 +232,14 @@ const User = () => {
 
   const columns = [
     {
+      title: '#',
+      key: 'sn',
+      width: 56,
+      align: 'center',
+      render: (_, __, index) =>
+        (tablePagination.current - 1) * tablePagination.pageSize + index + 1,
+    },
+    {
       title: 'Name',
       key: 'name',
       render: (_, record) => `${record.first_name} ${record.middle_name || ''} ${record.last_name}`.trim(),
@@ -301,9 +315,18 @@ const User = () => {
           rowKey="id"
           loading={loading}
           pagination={{
-            pageSize: 10,
+            current: tablePagination.current,
+            pageSize: tablePagination.pageSize,
+            total: filteredUsers.length,
             showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
             showTotal: (total) => `Total ${total} users`
+          }}
+          onChange={(pagination) => {
+            setTablePagination({
+              current: pagination?.current ?? 1,
+              pageSize: pagination?.pageSize ?? 10
+            });
           }}
         />
 

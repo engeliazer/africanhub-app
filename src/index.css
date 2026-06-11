@@ -510,6 +510,239 @@
   border-bottom: 1px solid rgba(227, 184, 87, 0.2) !important;
 }
 
+/* Global Alert Styling - Theme Aware */
+.ant-alert {
+  background: var(--color-card, #1C1C1C) !important;
+  border: 1px solid var(--color-border, #2A2A2A) !important;
+  color: var(--color-text-primary, #F2F2F2) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.ant-alert-message {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-alert-description {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-alert-description p {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-alert-description div {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+/* Alert type-specific backgrounds with theme-aware borders */
+.ant-alert-success {
+  background: rgba(82, 196, 26, 0.1) !important;
+  border-color: rgba(82, 196, 26, 0.3) !important;
+}
+
+.ant-alert-info {
+  background: rgba(24, 144, 255, 0.1) !important;
+  border-color: rgba(24, 144, 255, 0.3) !important;
+}
+
+.ant-alert-warning {
+  background: rgba(250, 173, 20, 0.1) !important;
+  border-color: rgba(250, 173, 20, 0.3) !important;
+}
+
+.ant-alert-error {
+  background: rgba(245, 34, 45, 0.1) !important;
+  border-color: rgba(245, 34, 45, 0.3) !important;
+}
+
+/* Alert icon colors - maintain semantic colors */
+.ant-alert-success .ant-alert-icon {
+  color: #52c41a !important;
+}
+
+.ant-alert-info .ant-alert-icon {
+  color: #1890ff !important;
+}
+
+.ant-alert-warning .ant-alert-icon {
+  color: #faad14 !important;
+}
+
+.ant-alert-error .ant-alert-icon {
+  color: #f5222d !important;
+}
+
+/* Global DatePicker/Picker Styling - Theme Aware */
+.ant-picker {
+  background: var(--color-card, #1C1C1C) !important;
+  border-color: var(--color-border, #2A2A2A) !important;
+  color: var(--color-text-primary, #F2F2F2) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.ant-picker:hover {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+}
+
+.ant-picker-focused {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+  box-shadow: 0 0 0 2px rgba(227, 184, 87, 0.2) !important;
+}
+
+.ant-picker-input > input {
+  background: transparent !important;
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-picker-input > input::placeholder {
+  color: var(--color-text-muted, #888888) !important;
+  opacity: 1 !important;
+}
+
+.ant-picker-input > input::-webkit-input-placeholder {
+  color: var(--color-text-muted, #888888) !important;
+  opacity: 1 !important;
+}
+
+.ant-picker-input > input::-moz-placeholder {
+  color: var(--color-text-muted, #888888) !important;
+  opacity: 1 !important;
+}
+
+.ant-picker-input > input:-ms-input-placeholder {
+  color: var(--color-text-muted, #888888) !important;
+  opacity: 1 !important;
+}
+
+.ant-picker-suffix {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-picker-clear {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+  background: var(--color-card, #1C1C1C) !important;
+}
+
+.ant-picker-clear:hover {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+/* DatePicker Dropdown/Panel */
+.ant-picker-dropdown {
+  background: var(--color-card, #1C1C1C) !important;
+  border: 1px solid var(--color-border, #2A2A2A) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+.ant-picker-panel {
+  background: var(--color-card, #1C1C1C) !important;
+  border-color: var(--color-border, #2A2A2A) !important;
+}
+
+.ant-picker-panel-container {
+  background: var(--color-card, #1C1C1C) !important;
+}
+
+.ant-picker-header {
+  border-bottom-color: var(--color-border, #2A2A2A) !important;
+}
+
+.ant-picker-header-view {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-picker-header-view button {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-picker-header-view button:hover {
+  color: var(--color-primary-accent, #E3B857) !important;
+}
+
+.ant-picker-prev-icon,
+.ant-picker-next-icon,
+.ant-picker-super-prev-icon,
+.ant-picker-super-next-icon {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-picker-prev-icon:hover,
+.ant-picker-next-icon:hover,
+.ant-picker-super-prev-icon:hover,
+.ant-picker-super-next-icon:hover {
+  color: var(--color-primary-accent, #E3B857) !important;
+}
+
+.ant-picker-content th {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-picker-cell {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-picker-cell:hover:not(.ant-picker-cell-disabled):not(.ant-picker-cell-selected) .ant-picker-cell-inner {
+  background: var(--color-border, #2A2A2A) !important;
+}
+
+.ant-picker-cell-in-view {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-picker-cell-today .ant-picker-cell-inner {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+  color: var(--color-primary-accent, #E3B857) !important;
+}
+
+.ant-picker-cell-selected .ant-picker-cell-inner,
+.ant-picker-cell-range-start .ant-picker-cell-inner,
+.ant-picker-cell-range-end .ant-picker-cell-inner {
+  background: var(--color-primary-accent, #E3B857) !important;
+  color: var(--color-background, #0F0F0F) !important;
+}
+
+.ant-picker-cell-in-range::before {
+  background: rgba(227, 184, 87, 0.1) !important;
+}
+
+.ant-picker-cell-disabled {
+  color: var(--color-text-muted, #888888) !important;
+  opacity: 0.5 !important;
+}
+
+.ant-picker-cell-disabled .ant-picker-cell-inner {
+  background: transparent !important;
+  color: var(--color-text-muted, #888888) !important;
+}
+
+.ant-picker-footer {
+  border-top-color: var(--color-border, #2A2A2A) !important;
+}
+
+.ant-picker-footer-extra {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-picker-now-btn,
+.ant-picker-today-btn {
+  color: var(--color-primary-accent, #E3B857) !important;
+}
+
+.ant-picker-now-btn:hover,
+.ant-picker-today-btn:hover {
+  color: var(--color-primary-accent, #E3B857) !important;
+  opacity: 0.8 !important;
+}
+
+/* RangePicker specific styles */
+.ant-picker-range {
+  background: var(--color-card, #1C1C1C) !important;
+}
+
+.ant-picker-range-separator {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
 /* Table Styling - Accent Color Borders */
 .ant-table {
   border: 1px solid rgba(227, 184, 87, 0.3) !important;
@@ -583,6 +816,95 @@
   color: var(--color-text-muted, #999) !important;
 }
 
+/* Select & Dropdown - Theme Aware (placeholder, trigger, options panel) */
+.ant-select .ant-select-selector {
+  background: var(--color-card, #1C1C1C) !important;
+  border-color: var(--color-border, #2A2A2A) !important;
+  color: var(--color-text-primary, #F2F2F2) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+.ant-select:hover .ant-select-selector {
+  border-color: var(--color-text-muted, #7A7A7A) !important;
+}
+
+.ant-select.ant-select-focused .ant-select-selector {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+  box-shadow: 0 0 0 2px rgba(227, 184, 87, 0.2) !important;
+}
+
+.ant-select .ant-select-selection-placeholder {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+  transition: color 0.3s ease;
+}
+
+.ant-select .ant-select-selection-item {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-select .ant-select-arrow {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+.ant-select .ant-select-clear {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+  background: var(--color-card, #1C1C1C) !important;
+}
+
+.ant-select .ant-select-clear:hover {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+/* Select dropdown panel (portalled) - theme aware */
+.ant-select-dropdown {
+  background: var(--color-card, #1C1C1C) !important;
+  border: 1px solid var(--color-border, #2A2A2A) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.ant-select-dropdown .ant-select-item {
+  color: var(--color-text-primary, #F2F2F2) !important;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.ant-select-dropdown .ant-select-item-option {
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-select-dropdown .ant-select-item-option:hover,
+.ant-select-dropdown .ant-select-item-option-active {
+  background: var(--color-border, #2A2A2A) !important;
+}
+
+.ant-select-dropdown .ant-select-item-option-selected {
+  background: var(--color-card-depth, #252525) !important;
+  color: var(--color-text-primary, #F2F2F2) !important;
+}
+
+.ant-select-dropdown .ant-select-item-option-disabled {
+  color: var(--color-text-muted, #7A7A7A) !important;
+}
+
+.ant-select-dropdown .ant-empty-description {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+/* Empty component - theme-aware (Table, Select, explicit Empty usage app-wide) */
+.ant-empty-description {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+  transition: color 0.3s ease;
+}
+
+/* Table empty state (placeholder row) - uses colorTextDisabled; override for dark theme visibility */
+.ant-table-tbody > tr.ant-table-placeholder {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+  transition: color 0.3s ease;
+}
+.ant-table-tbody > tr.ant-table-placeholder > td {
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
 /* Role Selector Specific Styles - Theme Aware */
 .role-selector .ant-select-selector {
   background: var(--color-card-depth, #252525) !important;
@@ -605,7 +927,33 @@
 }
 
 .role-selector .ant-select-selection-placeholder {
-  color: var(--color-text-muted, #7A7A7A) !important;
+  color: var(--color-text-secondary, #B8B8B8) !important;
+}
+
+/* Checkbox - theme-aware (dark theme visibility) */
+.ant-checkbox-inner {
+  border-color: var(--color-text-secondary, #B8B8B8) !important;
+  background-color: var(--color-card, #1C1C1C) !important;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+.ant-checkbox-wrapper:hover .ant-checkbox-inner,
+.ant-checkbox:hover .ant-checkbox-inner {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+}
+.ant-checkbox-checked .ant-checkbox-inner {
+  border-color: var(--color-primary-accent, #E3B857) !important;
+  background-color: var(--color-primary-accent, #E3B857) !important;
+}
+.ant-checkbox-wrapper {
+  color: var(--color-text-primary, #F2F2F2);
+}
+.ant-checkbox-wrapper-disabled,
+.ant-checkbox-disabled {
+  opacity: 0.6;
+}
+.ant-checkbox-disabled .ant-checkbox-inner {
+  border-color: var(--color-text-muted, #7A7A7A) !important;
+  background-color: var(--color-card-depth, #242424) !important;
 }
 
 /* Input Placeholder Styling - Dark Theme */
@@ -631,6 +979,37 @@
   color: var(--color-text-muted, #7A7A7A) !important;
   opacity: 1 !important;
   transition: color 0.3s ease;
+}
+
+/* Browser autofill override - keep theme colors for login fields */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary, #F2F2F2) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-card-depth, #242424) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-card-depth, #242424) inset !important;
+  caret-color: var(--color-text-primary, #F2F2F2) !important;
+  border-radius: inherit !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* Ensure AntD affix/password inputs remain themed when autofilled */
+.ant-input-affix-wrapper input:-webkit-autofill,
+.ant-input-affix-wrapper input:-webkit-autofill:hover,
+.ant-input-affix-wrapper input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--color-text-primary, #F2F2F2) !important;
+  -webkit-box-shadow: 0 0 0 1000px var(--color-card-depth, #242424) inset !important;
+  box-shadow: 0 0 0 1000px var(--color-card-depth, #242424) inset !important;
+}
+
+/* Firefox autofill */
+input:-moz-autofill,
+textarea:-moz-autofill {
+  box-shadow: 0 0 0 1000px var(--color-card-depth, #242424) inset !important;
+  -moz-text-fill-color: var(--color-text-primary, #F2F2F2) !important;
 }
 
 /* Topic header row in table */

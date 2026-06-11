@@ -4,7 +4,7 @@ import App from "./App.jsx";
 import "./index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { ConfigProvider, theme } from "antd";
+import { ConfigProvider } from "antd";
 import { Provider } from "react-redux";
 import { store } from "./state/index.js";
 import { ToastContainer } from "react-toastify";
@@ -31,10 +31,26 @@ const ThemedConfigProvider = ({ children }) => {
           colorBgContainer: colors.card,
           colorText: colors.textPrimary,
           colorTextSecondary: colors.textSecondary,
+          colorTextTertiary: colors.textSecondary,
+          colorTextDisabled: colors.textSecondary,
+          colorTextPlaceholder: colors.textSecondary,
           colorBorder: colors.border,
           colorBorderSecondary: colors.border,
         },
         components: {
+          Empty: {
+            colorTextDescription: colors.textSecondary,
+          },
+          Checkbox: {
+            colorBorder: colors.textSecondary,
+            colorBgContainer: colors.card,
+          },
+          Select: {
+            colorTextPlaceholder: colors.textSecondary,
+            colorBgContainer: colors.card,
+            colorBorder: colors.border,
+            colorText: colors.textPrimary,
+          },
           Menu: {
             itemActiveBg: colors.border,
             itemSelectedBg: colors.border,

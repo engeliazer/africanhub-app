@@ -14,9 +14,10 @@ const { Search } = Input;
 const { TabPane } = Tabs;
 
 const UsersList = () => {
-  const { users, loading: usersLoading, pagination, fetchUsers } = useUsers();
+  const { users, loading: usersLoading, fetchUsers } = useUsers();
   const { roles: availableRoles, isLoadingRoles, fetchRoles } = useRoles();
   const [searchText, setSearchText] = useState('');
+  const [tablePagination, setTablePagination] = useState({ current: 1, pageSize: 10 });
   const [selectedUser, setSelectedUser] = useState(null);
   const [isRoleModalVisible, setIsRoleModalVisible] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
@@ -30,6 +31,10 @@ const UsersList = () => {
     fetchUsers();
     fetchRoles();
   }, [fetchUsers, fetchRoles]);
+
+  useEffect(() => {
+    setTablePagination((p) => ({ ...p, current: 1 }));
+  }, [searchText]);
 
   const showUserProfile = async (user) => {
     try {
@@ -187,6 +192,14 @@ const UsersList = () => {
   };
 
   const columns = [
+    {
+      title: '#',
+      key: 'sn',
+      width: 56,
+      align: 'center',
+      render: (_, __, index) =>
+        (tablePagination.current - 1) * tablePagination.pageSize + index + 1,
+    },
     {
       title: 'Name',
       key: 'name',
@@ -404,9 +417,18 @@ const UsersList = () => {
           rowKey="id"
           loading={usersLoading}
           pagination={{
-            ...pagination,
+            current: tablePagination.current,
+            pageSize: tablePagination.pageSize,
+            total: filteredUsers.length,
             showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
             showTotal: (total) => `Total ${total} users`
+          }}
+          onChange={(pagination) => {
+            setTablePagination({
+              current: pagination?.current ?? 1,
+              pageSize: pagination?.pageSize ?? 10
+            });
           }}
         />
 

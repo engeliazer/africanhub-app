@@ -4,6 +4,7 @@ import DashboardPage from "../pages/dashboard";
 import LoginPage from "../pages/auth/LoginPage";
 import Register from "../pages/auth/Register";
 import ChangePassword from "../pages/auth/ChangePassword";
+import UnauthorizedAccess from "../pages/UnauthorizedAccess";
 import EmployeeList from "../pages/employees/EmployeeList";
 import EmployeeProfile from "../pages/employees/EmployeeProfile";
 import AddEmployee from "../pages/employees/AddEmployee";
@@ -22,11 +23,14 @@ import InstructorsList from '../pages/instructors/InstructorsList';
 import TestimonialsList from '../pages/testimonials/TestimonialsList';
 import AdminTestimonialsList from '../pages/testimonials/AdminTestimonialsList';
 import ChatManagement from '../pages/support/ChatManagement';
+import MailService from '../pages/support/MailService';
 import User from '../pages/support/User';
 import PendingPayments from '../pages/accounting/PendingPayments';
 import BankReconciliation from '../components/accounting/BankReconciliation';
 import AccountingDashboard from '../pages/accounting/AccountingDashboard';
 import AccountingReport from '../components/accounting/AccountingReport';
+import BankDetails from '../pages/accounting/BankDetails';
+import SmsService from '../pages/accounting/SmsService';
 
 // Import new application module pages
 import MyApplications from "../pages/applications/MyApplications";
@@ -82,6 +86,14 @@ export const router = [
   {
     path: "change-password",
     element: <ChangePassword />
+  },
+  {
+    path: "unauthorized",
+    element: (
+      <ProtectedRoute>
+        <UnauthorizedAccess />
+      </ProtectedRoute>
+    )
   },
   {
     path: "core",
@@ -302,13 +314,24 @@ export const router = [
       {
         path: "chat",
         element: <ChatManagement />
+      },
+      {
+        path: "mail-service",
+        element: (
+          <ProtectedRoute roles={['SYSADMIN']}>
+            <MailService />
+          </ProtectedRoute>
+        )
       }
     ]
   },
   {
     path: "accounting",
     element: (
-      <ProtectedRoute permissions={['VIEW_ACCOUNTING']}>
+      <ProtectedRoute
+        permissions={['VIEW_ACCOUNTING']}
+        roles={['FACILITATOR', 'SYSADMIN', 'ACCOUNTANT', 'MANAGER']}
+      >
         <SecondaryLayout />
       </ProtectedRoute>
     ),
@@ -324,6 +347,14 @@ export const router = [
       {
         path: "reconciliation",
         element: <BankReconciliation />
+      },
+      {
+        path: "bank-details",
+        element: <BankDetails />
+      },
+      {
+        path: "sms-service",
+        element: <SmsService />
       },
       {
         path: "reports",

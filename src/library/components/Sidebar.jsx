@@ -152,6 +152,8 @@ const Sidebar = ({
   // Get module label
   const moduleLabel = menuConfig.find(item => item.module === selectedModule)?.label || 'Module';
 
+  const isStudent = currentRole === 'STUDENT';
+
   return (
     <Sider
       trigger={null}
@@ -174,8 +176,8 @@ const Sidebar = ({
         borderRight: `1px solid ${colors.border}`
       }}
     >
-      {/* Switch Module Button */}
-      {onSwitchModule && (
+      {/* Switch Module Button (hidden for STUDENT) */}
+      {onSwitchModule && !isStudent && (
         <div style={{ padding: collapsed ? '12px 8px' : '12px 16px', borderBottom: `1px solid ${colors.border}`, background: colors.card }}>
           <Button
             type="text"
@@ -199,8 +201,8 @@ const Sidebar = ({
         </div>
       )}
 
-      {/* Role Selector */}
-      {onRoleChange && roles.length > 0 && (
+      {/* Role Selector (hidden for STUDENT) */}
+      {onRoleChange && roles.length > 0 && !isStudent && (
         <div style={{ padding: collapsed ? '12px 8px' : '12px 16px', borderBottom: `1px solid ${colors.border}`, background: colors.card }}>
           {collapsed ? (
             <Button

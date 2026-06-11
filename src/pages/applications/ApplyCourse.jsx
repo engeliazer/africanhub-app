@@ -1771,9 +1771,19 @@ const ApplyCourse = () => {
                                   boxShadow: isSelected
                                     ? `0 4px 12px rgba(227, 184, 87, 0.3)`
                                     : `0 2px 8px rgba(0, 0, 0, 0.1)`,
-                                  transition: 'all 0.3s ease'
+                                  transition: 'all 0.3s ease',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  overflow: 'hidden',
                                 }}
-                                bodyStyle={{ padding: '16px' }}
+                                bodyStyle={{
+                                  padding: '16px',
+                                  flex: 1,
+                                  minHeight: 0,
+                                  overflow: 'hidden',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                }}
                                 actions={[
                                   <Button
                                     key="apply"
@@ -1791,44 +1801,45 @@ const ApplyCourse = () => {
                                 ]}
                                 actionsStyle={{ padding: '12px 8px', display: 'flex', justifyContent: 'space-between', gap: '8px' }}
                               >
-                                <div style={{ marginBottom: 12 }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', marginBottom: 8 }}>
                                   <Checkbox
                                     checked={isSelected}
                                     onChange={() => handleSubjectSelection(subject.id)}
-                                    style={{ marginBottom: 8 }}
                                   >
                                     <Text strong style={{ color: colors.textPrimary, fontSize: '16px' }}>
                                       {subject.name}
                                     </Text>
                                   </Checkbox>
-                  </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
-                                    Code: {subject.code}
-                                  </Text>
                                 </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  {getAvailabilityTag()}
-                                  {subject.duration_days && (
-                                    <Tag color="blue" style={{ marginLeft: 8 }}>
-                                      {subject.duration_days} days
-                                    </Tag>
+                                <div style={{ flexShrink: 0, marginTop: 'auto', paddingTop: 8, borderTop: `1px solid ${colors.border}` }}>
+                                  <div style={{ marginBottom: 6 }}>
+                                    <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                      Code: {subject.code}
+                                    </Text>
+                                  </div>
+                                  <div style={{ marginBottom: 6 }}>
+                                    {getAvailabilityTag()}
+                                    {subject.duration_days && (
+                                      <Tag color="blue" style={{ marginLeft: 8 }}>
+                                        {subject.duration_days} days
+                                      </Tag>
+                                    )}
+                                  </div>
+                                  {subject.availability_reason === 'access_expired' && subject.days_since_application && (
+                                    <div style={{ marginBottom: 6 }}>
+                                      <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                        Expired {subject.days_since_application} days ago
+                                      </Text>
+                                    </div>
+                                  )}
+                                  {subject.price > 0 && (
+                                    <div>
+                                      <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
+                                        {formatCurrency(subject.price)}
+                                      </Text>
+                                    </div>
                                   )}
                                 </div>
-                                {subject.availability_reason === 'access_expired' && subject.days_since_application && (
-                                  <div style={{ marginBottom: 8 }}>
-                                    <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
-                                      Expired {subject.days_since_application} days ago
-                                    </Text>
-                                  </div>
-                                )}
-                                {subject.price > 0 && (
-                                  <div>
-                                    <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
-                                      {formatCurrency(subject.price)}
-                                    </Text>
-                                  </div>
-                                )}
                               </Card>
                             </Col>
                           );
@@ -1901,43 +1912,55 @@ const ApplyCourse = () => {
                                   background: colors.card,
                                   border: `1px solid ${colors.border}`,
                                   boxShadow: `0 2px 8px rgba(0, 0, 0, 0.1)`,
-                                  transition: 'all 0.3s ease'
+                                  transition: 'all 0.3s ease',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  overflow: 'hidden',
                                 }}
-                                bodyStyle={{ padding: '16px' }}
+                                bodyStyle={{
+                                  padding: '16px',
+                                  flex: 1,
+                                  minHeight: 0,
+                                  overflow: 'hidden',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                }}
                               >
-                                <div style={{ marginBottom: 12 }}>
+                                <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', marginBottom: 8 }}>
                                   <Text strong style={{ color: colors.textPrimary, fontSize: '16px' }}>
                                     {subject.name}
                                   </Text>
                                 </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
-                                    Code: {subject.code}
-                                  </Text>
-                                </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  {getStatusTag()}
-                                  {getAccessTag()}
-                                </div>
-                                <div style={{ marginBottom: 8 }}>
-                                  <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
-                                    Applied: {new Date(subject.application_date).toLocaleDateString()}
-                                  </Text>
-                                </div>
-                                {subject.days_remaining && (
-                                  <div style={{ marginBottom: 8 }}>
+                                <div style={{ flexShrink: 0, marginTop: 'auto', paddingTop: 8, borderTop: `1px solid ${colors.border}` }}>
+                                  <div style={{ marginBottom: 6 }}>
                                     <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
-                                      {subject.days_remaining} days remaining
+                                      Code: {subject.code}
                                     </Text>
                                   </div>
-                                )}
-                                {subject.fee > 0 && (
-                                  <div>
-                                    <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
-                                      {formatCurrency(subject.fee)}
+                                  <div style={{ marginBottom: 6 }}>
+                                    {getStatusTag()}
+                                    {getAccessTag()}
+                                  </div>
+                                  <div style={{ marginBottom: 6 }}>
+                                    <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                      Applied: {new Date(subject.application_date).toLocaleDateString()}
                                     </Text>
                                   </div>
-                                )}
+                                  {subject.days_remaining && (
+                                    <div style={{ marginBottom: 6 }}>
+                                      <Text style={{ color: colors.textMuted, fontSize: '12px' }}>
+                                        {subject.days_remaining} days remaining
+                                      </Text>
+                                    </div>
+                                  )}
+                                  {subject.fee > 0 && (
+                                    <div>
+                                      <Text strong style={{ color: colors.primaryAccent, fontSize: '18px' }}>
+                                        {formatCurrency(subject.fee)}
+                                      </Text>
+                                    </div>
+                                  )}
+                                </div>
                               </Card>
                             </Col>
                           );

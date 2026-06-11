@@ -62,13 +62,57 @@ const accountingService = {
     }
   },
 
-  // Get bank details
+  // Get default bank details (unchanged)
   getBankDetails: async () => {
     try {
       const response = await axios.get('/api/accounting/bank_details');
       return response.data;
     } catch (error) {
       console.error('Error fetching bank details:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // List all active bank details
+  getBankDetailsList: async () => {
+    try {
+      const response = await axios.get('/api/accounting/bank_details/list');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching bank details list:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Get one bank details record by ID
+  getBankDetailsById: async (id) => {
+    try {
+      const response = await axios.get(`/api/accounting/bank_details/${id}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching bank details by ID:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Create a new bank details record
+  createBankDetails: async (payload) => {
+    try {
+      const response = await axios.post('/api/accounting/bank_details', payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error creating bank details:', error);
+      throw error.response?.data || error.message;
+    }
+  },
+
+  // Update an existing bank details record
+  updateBankDetails: async (id, payload) => {
+    try {
+      const response = await axios.put(`/api/accounting/bank_details/${id}`, payload);
+      return response.data;
+    } catch (error) {
+      console.error('Error updating bank details:', error);
       throw error.response?.data || error.message;
     }
   },

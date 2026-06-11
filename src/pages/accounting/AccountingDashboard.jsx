@@ -19,11 +19,13 @@ import moment from 'moment';
 import './AccountingDashboard.css';
 import ReconciliationDetails from '../../components/accounting/ReconciliationDetails';
 import MatchedPaymentDetails from '../../components/accounting/MatchedPaymentDetails';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const { Title, Text } = Typography;
 const { RangePicker } = DatePicker;
 
 const AccountingDashboard = () => {
+  const { colors } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [summaryData, setSummaryData] = useState(null);
@@ -148,39 +150,45 @@ const AccountingDashboard = () => {
 
   const renderPaymentStatusSection = () => {
     if (!summaryData?.payment_status_summary) return null;
-    
+
     const { paid, pending, failed } = summaryData.payment_status_summary;
     const totalCount = paid.count + pending.count + failed.count;
-    
+
     return (
-      <div className="mb-8">
-        <Title level={4} className="mb-4">{summaryData.payment_status_summary.title}</Title>
-        <Divider className="mb-4" />
+      <div style={{ marginBottom: '32px' }}>
+        <Title level={4} style={{ color: colors.textPrimary, marginBottom: '16px' }}>{summaryData.payment_status_summary.title}</Title>
+        <Divider style={{ marginBottom: '16px' }} />
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={8}>
-            <Card 
-              className="h-full shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+            <Card
+              style={{
+                height: '100%',
+                background: colors.card,
+                border: `1px solid ${colors.border}`,
+                boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                cursor: 'pointer'
+              }}
               onClick={() => handleCardClick('payment_status_paid')}
             >
-              <div className="flex items-center mb-2">
-                <CheckCircleOutlined className="text-green-500 text-xl mr-2" />
-                <Text strong>Successfully Paid</Text>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <CheckCircleOutlined style={{ color: '#52c41a', fontSize: '20px', marginRight: '8px' }} />
+                <Text strong style={{ color: colors.textPrimary }}>Successfully Paid</Text>
               </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between items-end">
+              <Divider style={{ margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <Statistic 
-                    value={paid.count} 
+                  <Statistic
+                    value={paid.count}
                     suffix={`/ ${totalCount}`}
-                    className="mb-1"
+                    valueStyle={{ color: colors.textPrimary }}
                   />
-                  <Text type="secondary" className="text-sm">
+                  <Text style={{ color: colors.textSecondary, fontSize: '14px', display: 'block', marginTop: '4px' }}>
                     {formatCurrency(paid.total_amount)}
                   </Text>
                 </div>
-                <Progress 
-                  type="circle" 
-                  percent={totalCount > 0 ? Math.round((paid.count / totalCount) * 100) : 0} 
+                <Progress
+                  type="circle"
+                  percent={totalCount > 0 ? Math.round((paid.count / totalCount) * 100) : 0}
                   width={60}
                   strokeColor="#52c41a"
                   format={() => `${Math.round((paid.count / totalCount) * 100)}%`}
@@ -189,29 +197,35 @@ const AccountingDashboard = () => {
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card 
-              className="h-full shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+            <Card
+              style={{
+                height: '100%',
+                background: colors.card,
+                border: `1px solid ${colors.border}`,
+                boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                cursor: 'pointer'
+              }}
               onClick={() => handleCardClick('payment_status_pending')}
             >
-              <div className="flex items-center mb-2">
-                <ClockCircleOutlined className="text-blue-500 text-xl mr-2" />
-                <Text strong>Awaiting Payment</Text>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <ClockCircleOutlined style={{ color: '#1890ff', fontSize: '20px', marginRight: '8px' }} />
+                <Text strong style={{ color: colors.textPrimary }}>Awaiting Payment</Text>
               </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between items-end">
+              <Divider style={{ margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <Statistic 
-                    value={pending.count} 
+                  <Statistic
+                    value={pending.count}
                     suffix={`/ ${totalCount}`}
-                    className="mb-1"
+                    valueStyle={{ color: colors.textPrimary }}
                   />
-                  <Text type="secondary" className="text-sm">
+                  <Text style={{ color: colors.textSecondary, fontSize: '14px', display: 'block', marginTop: '4px' }}>
                     {formatCurrency(pending.total_amount)}
                   </Text>
                 </div>
-                <Progress 
-                  type="circle" 
-                  percent={totalCount > 0 ? Math.round((pending.count / totalCount) * 100) : 0} 
+                <Progress
+                  type="circle"
+                  percent={totalCount > 0 ? Math.round((pending.count / totalCount) * 100) : 0}
                   width={60}
                   strokeColor="#1890ff"
                   format={() => `${Math.round((pending.count / totalCount) * 100)}%`}
@@ -220,29 +234,35 @@ const AccountingDashboard = () => {
             </Card>
           </Col>
           <Col xs={24} sm={8}>
-            <Card 
-              className="h-full shadow-sm hover:shadow-md transition-shadow duration-300 cursor-pointer"
+            <Card
+              style={{
+                height: '100%',
+                background: colors.card,
+                border: `1px solid ${colors.border}`,
+                boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                cursor: 'pointer'
+              }}
               onClick={() => handleCardClick('payment_status_failed')}
             >
-              <div className="flex items-center mb-2">
-                <CloseCircleOutlined className="text-red-500 text-xl mr-2" />
-                <Text strong>Failed Payments</Text>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <CloseCircleOutlined style={{ color: '#f5222d', fontSize: '20px', marginRight: '8px' }} />
+                <Text strong style={{ color: colors.textPrimary }}>Failed Payments</Text>
               </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between items-end">
+              <Divider style={{ margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
                 <div>
-                  <Statistic 
-                    value={failed.count} 
+                  <Statistic
+                    value={failed.count}
                     suffix={`/ ${totalCount}`}
-                    className="mb-1"
+                    valueStyle={{ color: colors.textPrimary }}
                   />
-                  <Text type="secondary" className="text-sm">
+                  <Text style={{ color: colors.textSecondary, fontSize: '14px', display: 'block', marginTop: '4px' }}>
                     {formatCurrency(failed.total_amount)}
                   </Text>
                 </div>
-                <Progress 
-                  type="circle" 
-                  percent={totalCount > 0 ? Math.round((failed.count / totalCount) * 100) : 0} 
+                <Progress
+                  type="circle"
+                  percent={totalCount > 0 ? Math.round((failed.count / totalCount) * 100) : 0}
                   width={60}
                   strokeColor="#f5222d"
                   format={() => `${Math.round((failed.count / totalCount) * 100)}%`}
@@ -257,98 +277,131 @@ const AccountingDashboard = () => {
 
   const renderReconciliationSection = () => {
     if (!summaryData?.reconciliation_summary) return null;
-    
+
     const { matched_records, unmatched_records } = summaryData.reconciliation_summary;
-    
+
     return (
-      <div className="mb-8">
-        <Title level={4} className="mb-4">{summaryData.reconciliation_summary.title}</Title>
-        <Divider className="mb-4" />
+      <div style={{ marginBottom: '32px' }}>
+        <Title level={4} style={{ color: colors.textPrimary, marginBottom: '16px' }}>{summaryData.reconciliation_summary.title}</Title>
+        <Divider style={{ marginBottom: '16px' }} />
         <Row gutter={[16, 16]}>
           <Col xs={24}>
-            <Card className="h-full shadow-sm hover:shadow-md transition-shadow duration-300">
-              <Title level={5} className="mb-4 text-base">{summaryData.reconciliation_summary.matched_records.title}</Title>
-              <Divider className="my-2" />
+            <Card style={{
+              height: '100%',
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: `0 2px 8px ${colors.boxShadow}`
+            }}>
+              <Title level={5} style={{ color: colors.textPrimary, marginBottom: '16px', fontSize: '16px' }}>{summaryData.reconciliation_summary.matched_records.title}</Title>
+              <Divider style={{ margin: '8px 0' }} />
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12} md={6}>
-                  <Card 
-                    className="h-full border-l-4 border-l-green-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #52c41a',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_matched_verified')}
                   >
-                    <div className="flex items-center mb-2">
-                      <CheckOutlined className="text-green-500 mr-2" />
-                      <Text strong className="text-sm">Verified by Accountant</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <CheckOutlined style={{ color: '#52c41a', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Verified by Accountant</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={matched_records.matched_verified.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(matched_records.matched_verified.total_amount)}
                       </Text>
                     </div>
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                  <Card 
-                    className="h-full border-l-4 border-l-blue-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #1890ff',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_matched_approved')}
                   >
-                    <div className="flex items-center mb-2">
-                      <CheckOutlined className="text-blue-500 mr-2" />
-                      <Text strong className="text-sm">Approved by Manager</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <CheckOutlined style={{ color: '#1890ff', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Approved by Manager</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={matched_records.matched_approved.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(matched_records.matched_approved.total_amount)}
                       </Text>
                     </div>
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                  <Card 
-                    className="h-full border-l-4 border-l-yellow-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #faad14',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_matched_not_verified')}
                   >
-                    <div className="flex items-center mb-2">
-                      <SyncOutlined className="text-yellow-500 mr-2" />
-                      <Text strong className="text-sm">Not Verified</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <SyncOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Not Verified</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={matched_records.matched_not_verified.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(matched_records.matched_not_verified.total_amount)}
                       </Text>
                     </div>
                   </Card>
                 </Col>
                 <Col xs={24} sm={12} md={6}>
-                  <Card 
-                    className="h-full border-l-4 border-l-red-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #f5222d',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_matched_rejected')}
                   >
-                    <div className="flex items-center mb-2">
-                      <StopOutlined className="text-red-500 mr-2" />
-                      <Text strong className="text-sm">Rejected</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <StopOutlined style={{ color: '#f5222d', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Rejected</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={matched_records.matched_rejected.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(matched_records.matched_rejected.total_amount)}
                       </Text>
                     </div>
@@ -358,47 +411,66 @@ const AccountingDashboard = () => {
             </Card>
           </Col>
           <Col xs={24}>
-            <Card className="h-full shadow-sm hover:shadow-md transition-shadow duration-300">
-              <Title level={5} className="mb-4 text-base">{summaryData.reconciliation_summary.unmatched_records.title}</Title>
-              <Divider className="my-2" />
+            <Card style={{
+              height: '100%',
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: `0 2px 8px ${colors.boxShadow}`
+            }}>
+              <Title level={5} style={{ color: colors.textPrimary, marginBottom: '16px', fontSize: '16px' }}>{summaryData.reconciliation_summary.unmatched_records.title}</Title>
+              <Divider style={{ margin: '8px 0' }} />
               <Row gutter={[16, 16]}>
                 <Col xs={24} sm={12}>
-                  <Card 
-                    className="h-full border-l-4 border-l-yellow-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #faad14',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_unmatched_paid_no_bank')}
                   >
-                    <div className="flex items-center mb-2">
-                      <WarningOutlined className="text-yellow-500 mr-2" />
-                      <Text strong className="text-sm">Payments Without Bank Transactions</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <WarningOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Payments Without Bank Transactions</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={unmatched_records.paid_no_bank_transaction.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(unmatched_records.paid_no_bank_transaction.total_amount)}
                       </Text>
                     </div>
                   </Card>
                 </Col>
                 <Col xs={24} sm={12}>
-                  <Card 
-                    className="h-full border-l-4 border-l-red-500 shadow-sm cursor-pointer hover:shadow-md transition-shadow duration-300"
+                  <Card
+                    style={{
+                      height: '100%',
+                      background: colors.card,
+                      border: `1px solid ${colors.border}`,
+                      borderLeft: '4px solid #f5222d',
+                      boxShadow: `0 2px 8px ${colors.boxShadow}`,
+                      cursor: 'pointer'
+                    }}
                     onClick={() => handleCardClick('reconciliation_unmatched_bank_no_payment')}
                   >
-                    <div className="flex items-center mb-2">
-                      <ExclamationCircleOutlined className="text-red-500 mr-2" />
-                      <Text strong className="text-sm">Bank Transactions Without Payments</Text>
+                    <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                      <ExclamationCircleOutlined style={{ color: '#f5222d', marginRight: '8px' }} />
+                      <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Bank Transactions Without Payments</Text>
                     </div>
-                    <Divider className="my-2" />
-                    <div className="flex justify-between items-center">
+                    <Divider style={{ margin: '8px 0' }} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <Statistic
                         value={unmatched_records.bank_transaction_no_payment.count}
-                        className="mb-0"
+                        valueStyle={{ color: colors.textPrimary }}
                       />
-                      <Text type="secondary" className="text-sm">
+                      <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                         {formatCurrency(unmatched_records.bank_transaction_no_payment.total_amount)}
                       </Text>
                     </div>
@@ -414,45 +486,55 @@ const AccountingDashboard = () => {
 
   const renderSpecialCasesSection = () => {
     if (!summaryData?.special_cases) return null;
-    
+
     const { multiple_matches, expired_matches } = summaryData.special_cases;
-    
+
     return (
-      <div className="mb-8">
-        <Title level={4} className="mb-4">{summaryData.special_cases.title}</Title>
-        <Divider className="mb-4" />
+      <div style={{ marginBottom: '32px' }}>
+        <Title level={4} style={{ color: colors.textPrimary, marginBottom: '16px' }}>{summaryData.special_cases.title}</Title>
+        <Divider style={{ marginBottom: '16px' }} />
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12}>
-            <Card className="h-full shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="flex items-center mb-2">
-                <ExclamationCircleOutlined className="text-yellow-500 mr-2" />
-                <Text strong className="text-sm">Multiple Bank Transactions Matching One Payment</Text>
+            <Card style={{
+              height: '100%',
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: `0 2px 8px ${colors.boxShadow}`
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <ExclamationCircleOutlined style={{ color: '#faad14', marginRight: '8px' }} />
+                <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Multiple Bank Transactions Matching One Payment</Text>
               </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between items-center">
+              <Divider style={{ margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Statistic
                   value={multiple_matches.count}
-                  className="mb-0"
+                  valueStyle={{ color: colors.textPrimary }}
                 />
-                <Text type="secondary" className="text-sm">
+                <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                   {formatCurrency(multiple_matches.total_amount)}
                 </Text>
               </div>
             </Card>
           </Col>
           <Col xs={24} sm={12}>
-            <Card className="h-full shadow-sm hover:shadow-md transition-shadow duration-300">
-              <div className="flex items-center mb-2">
-                <WarningOutlined className="text-red-500 mr-2" />
-                <Text strong className="text-sm">Matches Pending Verification for Too Long</Text>
+            <Card style={{
+              height: '100%',
+              background: colors.card,
+              border: `1px solid ${colors.border}`,
+              boxShadow: `0 2px 8px ${colors.boxShadow}`
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                <WarningOutlined style={{ color: '#f5222d', marginRight: '8px' }} />
+                <Text strong style={{ color: colors.textPrimary, fontSize: '14px' }}>Matches Pending Verification for Too Long</Text>
               </div>
-              <Divider className="my-2" />
-              <div className="flex justify-between items-center">
+              <Divider style={{ margin: '8px 0' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Statistic
                   value={expired_matches.count}
-                  className="mb-0"
+                  valueStyle={{ color: colors.textPrimary }}
                 />
-                <Text type="secondary" className="text-sm">
+                <Text style={{ color: colors.textSecondary, fontSize: '14px' }}>
                   {formatCurrency(expired_matches.total_amount)}
                 </Text>
               </div>
@@ -464,34 +546,35 @@ const AccountingDashboard = () => {
   };
 
   return (
-    <div className="p-6 bg-background min-h-screen">
-      <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
-        <Title level={2} className="mb-4 md:mb-0 md:w-3/5">Accounting Dashboard</Title>
-        <div className="md:w-2/5">
-          <RangePicker 
-            value={dateRange}
-            onChange={handleDateRangeChange}
-            style={{ width: '100%' }}
-          />
+    <div style={{ padding: '24px', background: colors.background, minHeight: '100vh' }}>
+      <div style={{ marginBottom: '24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'flex-start' }}>
+          <Title level={2} style={{ color: colors.textPrimary, margin: 0 }}>Accounting Dashboard</Title>
+          <div style={{ width: '100%', maxWidth: '400px' }}>
+            <RangePicker
+              value={dateRange}
+              onChange={handleDateRangeChange}
+              style={{ width: '100%' }}
+            />
+          </div>
         </div>
       </div>
-      
+
       {!datesSelected ? (
-        <div className="bg-white p-6 rounded-lg shadow-sm text-center">
+        <div style={{
+          background: colors.card,
+          padding: '24px',
+          borderRadius: '8px',
+          boxShadow: `0 2px 8px ${colors.boxShadow}`,
+          textAlign: 'center',
+          border: `1px solid ${colors.border}`
+        }}>
           <Alert
-            message="Date Range Required"
-            description={
-              <div className="py-2">
-                <p className="mb-2">Please select a date range to view the accounting dashboard data.</p>
-                <p className="text-gray-600">
-                  The dashboard will display payment status, bank reconciliation, and special cases based on the selected date range.
-                </p>
-              </div>
-            }
+            message="Please select a date range to view the accounting dashboard"
             type="warning"
             showIcon
-            className="mb-4 border-l-4 border-l-yellow-500"
-            icon={<CalendarOutlined className="text-yellow-500 text-xl" />}
+            style={{ marginBottom: '16px' }}
+            icon={<CalendarOutlined style={{ fontSize: '20px' }} />}
           />
         </div>
       ) : error ? (
@@ -500,15 +583,27 @@ const AccountingDashboard = () => {
           description={error}
           type="error"
           showIcon
-          className="mb-6"
+          style={{ marginBottom: '24px' }}
         />
       ) : loading ? (
-        <div className="flex flex-col items-center justify-center min-h-[300px]">
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '300px'
+        }}>
           <Spin size="large" />
-          <Text className="mt-4">Loading reconciliation data...</Text>
+          <Text style={{ marginTop: '16px', color: colors.textSecondary }}>Loading reconciliation data...</Text>
         </div>
       ) : (
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div style={{
+          background: colors.card,
+          padding: '24px',
+          borderRadius: '8px',
+          boxShadow: `0 2px 8px ${colors.boxShadow}`,
+          border: `1px solid ${colors.border}`
+        }}>
           {renderPaymentStatusSection()}
           <Divider />
           {renderReconciliationSection()}
